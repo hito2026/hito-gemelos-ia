@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Informe ejecutivo de factibilidad para la instalación local de Odoo Enterprise 19.0">
+  <title>Instalación Odoo Local · Informes · Wiki de HitoFusion</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/news.css">
+  <link rel="stylesheet" href="assets/report.css">
+</head>
+<body>
+<header class="screen-header"><div class="top"><a class="brand" href="index.html">HITOFUSION</a><nav><a href="index.html">Inicio</a><a href="infraestructura-local.html">Infraestructura</a><a href="#contenido">Informe</a><a href="#15-fuentes">Fuentes</a></nav></div><div class="masthead news-head"><p class="kicker">Informes · Instalación Odoo Local</p><h1>Informe ejecutivo</h1><p>Factibilidad de instalación, operación e integración de Odoo Enterprise 19.0 en infraestructura local.</p><span class="status">Versión 0.2 · 18 de agosto de 2026</span></div></header>
+<main class="report-page">
+  <div class="report-tools"><nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Wiki</a><span>›</span><b>Informes</b><span>›</span><strong>Instalación Odoo Local</strong></nav><button type="button" onclick="window.print()" aria-label="Imprimir informe o guardarlo como PDF">Imprimir / Guardar PDF</button></div>
+  <aside class="report-toc"><p class="label">Contenido</p><a class="toc-level-2" href="#informe-ejecutivo-de-factibilidad">Informe ejecutivo de factibilidad</a><a class="toc-level-3" href="#instalacion-local-operacion-e-integracion-de-odoo-enterprise-19-0-en-codimat">Instalación local, operación e integración de Odoo Enterprise 19.0 en Codimat</a><a class="toc-level-3" href="#resumen-ejecutivo">Resumen ejecutivo</a><a class="toc-level-3" href="#1-contexto">1. Contexto</a><a class="toc-level-3" href="#2-objetivo">2. Objetivo</a><a class="toc-level-3" href="#3-alcance">3. Alcance</a><a class="toc-level-3" href="#4-condiciones-para-la-factibilidad">4. Condiciones para la factibilidad</a><a class="toc-level-3" href="#5-arquitectura-e-infraestructura">5. Arquitectura e infraestructura</a><a class="toc-level-3" href="#6-seguridad-continuidad-y-operacion">6. Seguridad, continuidad y operación</a><a class="toc-level-3" href="#7-integracion-con-el-sistema-externo">7. Integración con el sistema externo</a><a class="toc-level-3" href="#8-comunicacion-y-gobierno-tecnico">8. Comunicación y gobierno técnico</a><a class="toc-level-3" href="#9-control-e-intervencion-sobre-desarrollos">9. Control e intervención sobre desarrollos</a><a class="toc-level-3" href="#10-tareas-y-etapas">10. Tareas y etapas</a><a class="toc-level-3" href="#11-roles-principales">11. Roles principales</a><a class="toc-level-3" href="#12-tipos-de-asistencia">12. Tipos de asistencia</a><a class="toc-level-3" href="#13-riesgos-principales">13. Riesgos principales</a><a class="toc-level-3" href="#14-decision-y-proximos-pasos">14. Decisión y próximos pasos</a><a class="toc-level-3" href="#15-fuentes">15. Fuentes</a><a class="toc-level-3" href="#informacion-pendiente-para-la-version-final">Información pendiente para la versión final</a></aside>
+  <article id="contenido" class="report-document"><h2 id="informe-ejecutivo-de-factibilidad">Informe ejecutivo de factibilidad</h2>
+<h3 id="instalacion-local-operacion-e-integracion-de-odoo-enterprise-19-0-en-codimat">Instalación local, operación e integración de Odoo Enterprise 19.0 en Codimat</h3>
+<p><strong>Versión:</strong> 0.2 — borrador para entrega <strong>Fecha:</strong> 18 de agosto de 2026 <strong>Conclusión:</strong> viable con condiciones</p>
+<h3 id="resumen-ejecutivo">Resumen ejecutivo</h3>
+<p>La instalación de Odoo Enterprise 19.0 en infraestructura local de Codimat es <strong>técnicamente viable</strong>, siempre que se cumplan las condiciones de infraestructura, seguridad, operación, licenciamiento y gobierno indicadas en este informe.</p>
+<p>También es viable integrar Odoo con el sistema externo utilizado por Codimat para procesos operativos y financieros. La integración deberá validarse mediante un relevamiento funcional y técnico y, antes de su implementación definitiva, mediante una prueba de concepto.</p>
+<p>La recomendación es avanzar en cuatro etapas:</p>
+<ol><li>Relevamiento de infraestructura, usuarios, procesos e integración.</li><li>Diseño y dimensionamiento de la solución.</li><li>Prueba de instalación, respaldo, recuperación e integración.</li><li>Implementación controlada, homologación y salida a producción.</li></ol>
+<p>No se recomienda iniciar la instalación productiva hasta completar el relevamiento, confirmar las licencias y aprobar la arquitectura.</p>
+<h3 id="1-contexto">1. Contexto</h3>
+<p>Codimat solicitó evaluar:</p>
+<ol><li>Las implicancias técnicas de instalar Odoo Enterprise 19.0 en infraestructura local.</li><li>La forma de trabajo entre el área técnica de Codimat y nuestra empresa.</li><li>Los mecanismos para controlar, supervisar y eventualmente intervenir en desarrollos.</li><li>La integración de Odoo con un sistema externo de gestión operativa y financiera.</li></ol>
+<p>Este documento presenta una factibilidad preliminar y las condiciones necesarias para tomar una decisión definitiva.</p>
+<h3 id="2-objetivo">2. Objetivo</h3>
+<p>Determinar si Codimat puede instalar, operar, mantener e integrar Odoo Enterprise 19.0 en infraestructura propia de manera segura, controlada y sostenible.</p>
+<h3 id="3-alcance">3. Alcance</h3>
+<h4 id="incluye">Incluye</h4>
+<ul><li>Arquitectura y requerimientos técnicos.</li><li>Ambientes de desarrollo, homologación y producción.</li><li>Seguridad, backups, monitoreo y continuidad.</li><li>Integración con sistemas externos.</li><li>Gobierno del desarrollo y control de cambios.</li><li>Roles, tareas y tipos de asistencia.</li></ul>
+<h4 id="no-incluye">No incluye</h4>
+<ul><li>Instalación o migración efectiva.</li><li>Desarrollo final de la integración.</li><li>Presupuesto y cronograma contractual.</li><li>SLA definitivo.</li><li>Dimensionamiento final sin métricas reales.</li></ul>
+<h3 id="4-condiciones-para-la-factibilidad">4. Condiciones para la factibilidad</h3>
+<p>La implementación será factible si Codimat y nuestra empresa acuerdan y verifican:</p>
+<ul><li>Infraestructura Linux compatible con Odoo 19.</li><li>Licencia Odoo Enterprise y plan apto para instalación local e integración.</li><li>Ambientes separados de desarrollo, homologación y producción.</li><li>PostgreSQL, almacenamiento y red dimensionados para la carga real.</li><li>HTTPS/TLS, DNS, proxy reverso y correo correctamente configurados.</li><li>Backups automatizados y restauraciones probadas.</li><li>Monitoreo, logs y alertas.</li><li>Accesos nominados, mínimo privilegio y protección de credenciales.</li><li>Repositorio Git, revisión de código y despliegues controlados.</li><li>Responsables técnicos y funcionales de ambas empresas.</li><li>Documentación y ambiente de prueba del sistema externo.</li></ul>
+<h3 id="5-arquitectura-e-infraestructura">5. Arquitectura e infraestructura</h3>
+<h4 id="5-1-stack-tecnologico-de-referencia">5.1 Stack tecnológico de referencia</h4>
+<p>La solución deberá contemplar, como mínimo:</p>
+<div class="table-scroll"><table><thead><tr><th>Componente</th><th>Función</th></tr></thead><tbody>
+<tr><td>Linux</td><td>Sistema operativo de producción</td></tr>
+<tr><td>Odoo Enterprise 19.0</td><td>Aplicación de gestión</td></tr>
+<tr><td>PostgreSQL</td><td>Base de datos</td></tr>
+<tr><td>Nginx o proxy equivalente</td><td>Publicación, HTTPS y enrutamiento</td></tr>
+<tr><td>Certificados TLS</td><td>Protección del tráfico</td></tr>
+<tr><td>Git</td><td>Versionado de desarrollos y configuración permitida</td></tr>
+<tr><td>Sistema de backups</td><td>Respaldo de base, filestore y configuración</td></tr>
+<tr><td>Monitoreo y logs</td><td>Detección, diagnóstico y trazabilidad</td></tr>
+<tr><td>CI/CD</td><td>Pruebas y despliegues controlados</td></tr>
+</tbody></table></div>
+<p>Como ejemplo técnico puede consultarse el <a href="https://github.com/Yenthe666/InstallScript" target="_blank" rel="noopener noreferrer">script comunitario de instalación de Yenthe Van Ginneken</a>. El script muestra la orquestación habitual de usuario de sistema, dependencias, PostgreSQL, fuentes Community y Enterprise, servicio Odoo, Nginx, certificados y generación de configuración.</p>
+<p>Este repositorio es una <strong>referencia comunitaria, no documentación oficial de Odoo</strong>. No debe ejecutarse directamente en producción sin revisar el código, fijar versiones, adaptar seguridad, backups, rutas, credenciales y parámetros a la arquitectura aprobada por Codimat.</p>
+<h4 id="5-2-sistema-operativo-e-instalacion">5.2 Sistema operativo e instalación</h4>
+<p>Para producción se recomienda Linux. La documentación oficial de Odoo 19 desaconseja Windows para despliegues productivos. Odoo ofrece instalación mediante paquetes y desde código fuente; la opción deberá definirse según el modelo de mantenimiento y desarrollo.</p>
+<h4 id="5-3-dimensionamiento-preliminar">5.3 Dimensionamiento preliminar</h4>
+<p>La siguiente tabla es una <strong>referencia inicial</strong>, no un dimensionamiento definitivo. Supone una instalación optimizada, carga transaccional normal y almacenamiento rápido. Debe ajustarse con métricas, módulos, adjuntos, reportes, automatizaciones, tareas programadas e integraciones reales.</p>
+<div class="table-scroll"><table><thead><tr><th>Perfil</th><th>Usuarios nominales</th><th>Usuarios concurrentes</th><th>Tipo de integración</th><th>CPU producción</th><th>RAM producción</th><th>Almacenamiento inicial*</th></tr></thead><tbody>
+<tr><td>Inicial</td><td>Hasta 25</td><td>Hasta 5</td><td>Sin integración o procesos por lote de baja frecuencia</td><td>4 vCPU</td><td>8 GB</td><td>150–250 GB</td></tr>
+<tr><td>Medio</td><td>26–75</td><td>6–15</td><td>API con carga moderada y tareas periódicas</td><td>8 vCPU</td><td>16 GB</td><td>300–500 GB</td></tr>
+<tr><td>Alto</td><td>76–150</td><td>16–30</td><td>Integraciones frecuentes, automatizaciones y reportes intensivos</td><td>12–16 vCPU</td><td>32 GB</td><td>500 GB–1 TB</td></tr>
+<tr><td>Especial</td><td>Más de 150</td><td>Más de 30</td><td>Integración intensiva, múltiples sistemas o alta disponibilidad</td><td>Diseño específico</td><td>Diseño específico</td><td>Según datos, adjuntos y retención</td></tr>
+</tbody></table></div>
+<p>\* El almacenamiento debe incluir crecimiento de PostgreSQL y filestore, espacio operativo, logs y backups según la política de retención. Las copias de seguridad no deben depender únicamente del mismo servidor.</p>
+<p>La guía oficial de Odoo utiliza como referencia aproximadamente <strong>un worker por cada seis usuarios concurrentes</strong>, con un máximo orientativo de workers condicionado por CPU. La memoria debe calcularse según cantidad y tipo de workers. Las integraciones, cron y procesos pesados consumen capacidad adicional.</p>
+<h4 id="5-4-ambientes">5.4 Ambientes</h4>
+<div class="table-scroll"><table><thead><tr><th>Ambiente</th><th>Capacidad recomendada</th><th>Uso</th></tr></thead><tbody>
+<tr><td>Desarrollo</td><td>2–4 vCPU, 4–8 GB RAM</td><td>Desarrollo, pruebas unitarias y revisión técnica</td></tr>
+<tr><td>Homologación</td><td>Al menos 50 % de producción; igual arquitectura y versiones</td><td>Pruebas funcionales, integración, despliegue y restauración</td></tr>
+<tr><td>Producción</td><td>Según perfil y prueba de carga</td><td>Operación real</td></tr>
+</tbody></table></div>
+<p>Homologación deberá reproducir las versiones, módulos y configuración relevante de producción. Para pruebas de rendimiento deberá contar temporalmente con capacidad equivalente a producción.</p>
+<h4 id="5-5-tecnologias-recomendadas-para-ambientes-despliegues-y-recuperacion">5.5 Tecnologías recomendadas para ambientes, despliegues y recuperación</h4>
+<p>Se recomienda separar la administración de infraestructura, los despliegues y los respaldos. La arquitectura propuesta es la siguiente:</p>
+<div class="table-scroll"><table><thead><tr><th>Nivel</th><th>Tecnología recomendada</th><th>Función</th></tr></thead><tbody>
+<tr><td>Virtualización</td><td><a href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html" target="_blank" rel="noopener noreferrer">Proxmox VE</a></td><td>Crear y aislar las VPS de producción y staging; administrar recursos, redes, permisos y snapshots</td></tr>
+<tr><td>Despliegues</td><td><a href="https://docs.dokploy.com/docs/core/docker-compose" target="_blank" rel="noopener noreferrer">Dokploy</a></td><td>Gestionar servicios con Docker Compose, Git, variables por ambiente, dominios, certificados, logs y despliegues trazables</td></tr>
+<tr><td>Backup de instancias</td><td><a href="https://pbs.proxmox.com/docs/" target="_blank" rel="noopener noreferrer">Proxmox Backup Server</a></td><td>Realizar respaldos incrementales y verificados de las VPS para recuperación integral ante desastre</td></tr>
+<tr><td>Backup de PostgreSQL</td><td><a href="https://pgbackrest.org/user-guide-index.html" target="_blank" rel="noopener noreferrer">pgBackRest</a></td><td>Ejecutar backups completos e incrementales, archivo WAL y recuperación a un punto en el tiempo</td></tr>
+<tr><td>Backup de filestore y volúmenes</td><td><a href="https://restic.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">Restic</a> hacia almacenamiento S3 compatible</td><td>Mantener copias cifradas y versionadas fuera del servidor productivo; puede utilizarse <a href="https://min.io/docs/minio/linux/index.html" target="_blank" rel="noopener noreferrer">MinIO</a> en una ubicación independiente</td></tr>
+<tr><td>Monitoreo</td><td><a href="https://github.com/louislam/uptime-kuma" target="_blank" rel="noopener noreferrer">Uptime Kuma</a>, <a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener noreferrer">Prometheus</a> y <a href="https://grafana.com/docs/grafana/latest/" target="_blank" rel="noopener noreferrer">Grafana</a></td><td>Controlar disponibilidad, recursos, métricas y alertas</td></tr>
+</tbody></table></div>
+<p>Producción y staging deberán ejecutarse en VPS separadas, sin compartir base de datos, filestore, secretos ni credenciales. Staging deberá reproducir las versiones y la configuración relevante de producción, utilizando datos anonimizados y credenciales neutralizadas.</p>
+<p>Proxmox VE administrará la infraestructura y Dokploy administrará los despliegues. Los cambios continuarán pasando por Git, revisión, homologación, aprobación y rollback. Los snapshots se utilizarán como apoyo operativo, pero no reemplazarán los backups de PostgreSQL, filestore y configuración.</p>
+<p>La combinación recomendada es <strong>Proxmox VE + Dokploy + Proxmox Backup Server + pgBackRest + Restic/S3</strong>. Esta arquitectura es modular, auditable y evita depender de una única herramienta para el despliegue y la recuperación.</p>
+<h4 id="5-6-datos-necesarios-para-cerrar-el-dimensionamiento">5.6 Datos necesarios para cerrar el dimensionamiento</h4>
+<ul><li>Usuarios nominales y concurrentes.</li><li>Módulos y procesos críticos.</li><li>Tamaño actual y crecimiento de datos y adjuntos.</li><li>Cantidad y duración de tareas programadas.</li><li>Volumen y frecuencia de integraciones.</li><li>Uso de reportes, contabilidad, inventario, manufactura y comercio electrónico.</li><li>Requisitos de disponibilidad, RPO y RTO.</li></ul>
+<h3 id="6-seguridad-continuidad-y-operacion">6. Seguridad, continuidad y operación</h3>
+<h4 id="seguridad-minima">Seguridad mínima</h4>
+<ul><li>Accesos nominados y mínimo privilegio.</li><li>MFA, VPN o bastión para administración remota.</li><li>Credenciales fuera del código y rotación periódica.</li><li>HTTPS/TLS y restricción de puertos.</li><li>Revisión de módulos propios y de terceros.</li><li>Actualizaciones controladas de sistema operativo, dependencias y Odoo.</li><li>Registro de accesos, errores, cambios e incidentes.</li></ul>
+<h4 id="backups-y-recuperacion">Backups y recuperación</h4>
+<p>Se aplicará la regla <strong>3-2-1</strong>: tres copias, en dos medios distintos y al menos una fuera de la infraestructura principal.</p>
+<ul><li><strong>PostgreSQL:</strong> pgBackRest con backups completos e incrementales, archivo continuo de WAL y recuperación a un punto en el tiempo.</li><li><strong>Filestore, configuraciones y volúmenes persistentes:</strong> Restic o la función de <a href="https://docs.dokploy.com/docs/core/volume-backups" target="_blank" rel="noopener noreferrer">backup de volúmenes de Dokploy</a>, con destino S3 compatible fuera del servidor productivo.</li><li><strong>Instancias completas:</strong> Proxmox Backup Server alojado en hardware o almacenamiento independiente para recuperación ante desastre.</li><li><strong>Código y módulos propios:</strong> repositorio Git y copia externa del repositorio.</li></ul>
+<p>La base de datos y el filestore deberán respaldarse de forma coordinada. Se definirán el punto máximo de pérdida aceptable (<strong>RPO</strong>), el tiempo objetivo de recuperación (<strong>RTO</strong>) y la política de retención. Las restauraciones completas deberán probarse y documentarse periódicamente; un backup no se considerará válido hasta verificar su restauración.</p>
+<p>Los snapshots de Proxmox o Docker facilitan una vuelta atrás operativa, pero <strong>no reemplazan</strong> los backups independientes de datos, archivos y configuración.</p>
+<h4 id="cambios-y-actualizaciones">Cambios y actualizaciones</h4>
+<p>Todo cambio deberá pasar por:</p>
+<blockquote>Ticket → análisis → desarrollo/configuración → revisión → prueba en homologación → aprobación → despliegue → validación → cierre o rollback</blockquote>
+<p>No se realizarán cambios directos en producción salvo emergencia documentada.</p>
+<h3 id="7-integracion-con-el-sistema-externo">7. Integración con el sistema externo</h3>
+<h4 id="7-1-alternativas">7.1 Alternativas</h4>
+<p>Odoo 19 incorpora la API externa JSON-2. También admite automatizaciones y webhooks. Para procesos complejos puede utilizarse un servicio intermedio que gestione transformación, colas, reintentos y trazabilidad.</p>
+<div class="table-scroll"><table><thead><tr><th>Mecanismo</th><th>Uso recomendado</th></tr></thead><tbody>
+<tr><td>API JSON-2</td><td>Consultas y operaciones síncronas sobre Odoo</td></tr>
+<tr><td>Webhooks</td><td>Notificación de eventos entre sistemas</td></tr>
+<tr><td>Middleware o capa de integración</td><td>Integraciones complejas, desacople, transformación, reintentos y monitoreo</td></tr>
+<tr><td>Archivos por lote</td><td>Cuando el sistema externo no dispone de API</td></tr>
+</tbody></table></div>
+<p>La documentación de Odoo indica que la API externa requiere un plan Custom. Esta condición deberá confirmarse antes de aprobar la arquitectura.</p>
+<h4 id="7-2-criterios-obligatorios">7.2 Criterios obligatorios</h4>
+<p>Cada flujo de integración deberá definir:</p>
+<ul><li>Sistema de origen y sistema maestro del dato.</li><li>Entidades y campos.</li><li>Dirección y frecuencia.</li><li>Autenticación y permisos.</li><li>Validaciones y reglas de negocio.</li><li>Idempotencia y prevención de duplicados.</li><li>Timeouts, reintentos y recuperación de errores.</li><li>Trazabilidad y conciliación.</li><li>Responsable funcional y técnico.</li></ul>
+<h4 id="7-3-referencia-hitofusion">7.3 Referencia Hitofusion</h4>
+<p>La <a href="https://hitofusion-doc.netlify.app/" target="_blank" rel="noopener noreferrer">documentación interna de Hitofusion</a> deberá utilizarse como estándar para diseñar y documentar las integraciones. Cada integración deberá registrar objetivo y alcance, arquitectura y secuencia, endpoints y payloads, autenticación, mapeo con Odoo, idempotencia, errores, límites, orden de carga y pruebas. El objetivo es centralizar contratos, flujos, transformaciones, estados y evidencias operativas en un proceso mantenible y auditable.</p>
+<p>Los casos ya publicados por Hitofusion son antecedentes metodológicos. No reemplazan el análisis específico del sistema externo de Codimat ni demuestran por sí solos compatibilidad con Odoo 19.</p>
+<p>Antes de construir el conector se realizará una prueba de concepto con al menos un flujo operativo y uno financiero.</p>
+<h3 id="8-comunicacion-y-gobierno-tecnico">8. Comunicación y gobierno técnico</h3>
+<p>Cada empresa designará un referente titular y uno alterno.</p>
+<div class="table-scroll"><table><thead><tr><th>Instancia</th><th>Canal</th><th>Objetivo</th></tr></thead><tbody>
+<tr><td>Solicitudes e incidentes</td><td>Sistema de tickets</td><td>Registrar prioridad, impacto, evidencia y seguimiento</td></tr>
+<tr><td>Coordinación técnica</td><td>Reunión semanal durante el proyecto</td><td>Resolver bloqueos y tomar decisiones técnicas</td></tr>
+<tr><td>Seguimiento ejecutivo</td><td>Reunión quincenal o mensual</td><td>Revisar avance, riesgos y decisiones</td></tr>
+<tr><td>Incidente crítico</td><td>Canal de escalamiento acordado</td><td>Contener, recuperar y comunicar</td></tr>
+</tbody></table></div>
+<p>Los tiempos de respuesta, horarios de cobertura y severidades deberán quedar definidos en el acuerdo de servicio correspondiente.</p>
+<h3 id="9-control-e-intervencion-sobre-desarrollos">9. Control e intervención sobre desarrollos</h3>
+<p>Codimat podrá supervisar y participar mediante:</p>
+<ul><li>Acceso al repositorio según el rol acordado.</li><li>Tickets relacionados con commits y entregas.</li><li>Ramas protegidas y pull/merge requests.</li><li>Revisión técnica y funcional.</li><li>Pruebas automáticas y evidencias de homologación.</li><li>Versionado y notas de cambio.</li><li>Documentación de módulos e integración.</li><li>Aprobación previa al despliegue productivo.</li><li>Plan de rollback.</li></ul>
+<p>Toda intervención de Codimat deberá respetar el mismo proceso. No se admitirán cambios no trazados en producción.</p>
+<h3 id="10-tareas-y-etapas">10. Tareas y etapas</h3>
+<div class="table-scroll"><table><thead><tr><th>Etapa</th><th>Tareas</th><th>Criterio de cierre</th></tr></thead><tbody>
+<tr><td>1. Relevamiento</td><td>Usuarios, procesos, infraestructura, seguridad, datos e integración</td><td>Información validada por Codimat</td></tr>
+<tr><td>2. Diseño</td><td>Arquitectura, dimensionamiento, roles, riesgos y plan</td><td>Diseño aprobado</td></tr>
+<tr><td>3. Prueba de concepto</td><td>Instalación, integración, backup y restauración</td><td>Evidencia técnica satisfactoria</td></tr>
+<tr><td>4. Preparación</td><td>Ambientes, Git, CI/CD, monitoreo y procedimientos</td><td>Checklist aprobado</td></tr>
+<tr><td>5. Implementación</td><td>Instalación, configuración, desarrollos y migración acordada</td><td>Versión homologada</td></tr>
+<tr><td>6. Producción</td><td>Despliegue, validación y estabilización</td><td>Aceptación formal</td></tr>
+<tr><td>7. Transferencia</td><td>Capacitación y documentación</td><td>Responsables habilitados</td></tr>
+</tbody></table></div>
+<h3 id="11-roles-principales">11. Roles principales</h3>
+<div class="table-scroll"><table><thead><tr><th>Rol</th><th>Responsabilidad</th></tr></thead><tbody>
+<tr><td>Sponsor de Codimat</td><td>Aprobar alcance, prioridades y decisiones</td></tr>
+<tr><td>Referente funcional</td><td>Validar procesos y resultados</td></tr>
+<tr><td>Infraestructura y seguridad de Codimat</td><td>Proveer y operar la plataforma acordada</td></tr>
+<tr><td>Responsable del sistema externo</td><td>Entregar documentación, acceso y soporte</td></tr>
+<tr><td>Consultoría funcional Odoo</td><td>Configuración y validación funcional</td></tr>
+<tr><td>Arquitectura/DevOps</td><td>Arquitectura, ambientes, despliegue y operación</td></tr>
+<tr><td>Desarrollo e integración</td><td>Módulos, conectores y correcciones</td></tr>
+<tr><td>QA</td><td>Planificar y verificar pruebas</td></tr>
+<tr><td>Soporte</td><td>Recibir, clasificar y resolver incidentes</td></tr>
+</tbody></table></div>
+<p>La asignación definitiva se formalizará mediante una matriz RACI.</p>
+<h3 id="12-tipos-de-asistencia">12. Tipos de asistencia</h3>
+<ul><li>Consultoría técnica y funcional.</li><li>Diseño y revisión de arquitectura.</li><li>Instalación y configuración.</li><li>Desarrollo e integración.</li><li>Auditoría de código y despliegues.</li><li>Mesa de ayuda y soporte reactivo.</li><li>Monitoreo y mantenimiento preventivo.</li><li>Mantenimiento correctivo y evolutivo.</li><li>Capacitación y transferencia de conocimiento.</li><li>Acompañamiento a producción.</li></ul>
+<p>Cada asistencia deberá indicar alcance, responsables, horario, tiempos objetivo, exclusiones y evidencia de cierre.</p>
+<h3 id="13-riesgos-principales">13. Riesgos principales</h3>
+<div class="table-scroll"><table><thead><tr><th>Riesgo</th><th>Mitigación</th></tr></thead><tbody>
+<tr><td>Infraestructura insuficiente</td><td>Relevamiento, métricas y prueba de carga</td></tr>
+<tr><td>Pérdida de datos</td><td>Backups integrales y restauraciones probadas</td></tr>
+<tr><td>Integración inconsistente</td><td>Idempotencia, conciliación, reintentos y monitoreo</td></tr>
+<tr><td>Cambios sin control</td><td>Git, tickets, revisión y aprobación</td></tr>
+<tr><td>Dependencia de personas</td><td>Documentación, alternos y transferencia</td></tr>
+<tr><td>Credenciales expuestas</td><td>Gestor de secretos, mínimo privilegio y rotación</td></tr>
+<tr><td>Licencia o plan inadecuado</td><td>Confirmación comercial previa</td></tr>
+</tbody></table></div>
+<h3 id="14-decision-y-proximos-pasos">14. Decisión y próximos pasos</h3>
+<h4 id="decision-preliminar">Decisión preliminar</h4>
+<p><strong>La instalación local de Odoo Enterprise 19.0 en Codimat es viable con condiciones.</strong></p>
+<h4 id="acciones-requeridas">Acciones requeridas</h4>
+<ol><li>Designar responsables de ambas empresas.</li><li>Completar el relevamiento técnico y funcional.</li><li>Confirmar licencias y plan Odoo.</li><li>Obtener documentación y acceso de prueba del sistema externo.</li><li>Definir arquitectura y dimensionamiento.</li><li>Ejecutar una prueba de concepto de instalación e integración.</li><li>Probar backup y restauración.</li><li>Aprobar seguridad, operación, alcance, cronograma y costos.</li></ol>
+<p>Solo después de completar estas acciones se emitirá la recomendación definitiva de implementación.</p>
+<h3 id="15-fuentes">15. Fuentes</h3>
+<h4 id="documentacion-oficial-de-odoo-19">Documentación oficial de Odoo 19</h4>
+<ul><li><a href="https://www.odoo.com/documentation/19.0/administration/on_premise.html" target="_blank" rel="noopener noreferrer">Instalación on-premise</a></li><li><a href="https://www.odoo.com/documentation/19.0/administration/on_premise/source.html" target="_blank" rel="noopener noreferrer">Instalación desde código fuente</a></li><li><a href="https://www.odoo.com/documentation/19.0/administration/on_premise/packages.html" target="_blank" rel="noopener noreferrer">Paquetes oficiales</a></li><li><a href="https://www.odoo.com/documentation/19.0/administration/on_premise/deploy.html" target="_blank" rel="noopener noreferrer">Configuración de producción, workers y memoria</a></li><li><a href="https://www.odoo.com/documentation/19.0/developer/reference/external_api.html" target="_blank" rel="noopener noreferrer">API externa JSON-2</a></li><li><a href="https://www.odoo.com/documentation/19.0/applications/studio/automated_actions.html" target="_blank" rel="noopener noreferrer">Automatizaciones y webhooks</a></li></ul>
+<h4 id="documentacion-oficial-de-infraestructura-y-operacion">Documentación oficial de infraestructura y operación</h4>
+<ul><li><a href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html" target="_blank" rel="noopener noreferrer">Proxmox VE — guía de administración</a></li><li><a href="https://pbs.proxmox.com/docs/" target="_blank" rel="noopener noreferrer">Proxmox Backup Server — documentación</a></li><li><a href="https://docs.dokploy.com/docs/core/docker-compose" target="_blank" rel="noopener noreferrer">Dokploy — despliegues con Docker Compose</a></li><li><a href="https://docs.dokploy.com/docs/core/volume-backups" target="_blank" rel="noopener noreferrer">Dokploy — backup de volúmenes</a></li><li><a href="https://pgbackrest.org/user-guide-index.html" target="_blank" rel="noopener noreferrer">pgBackRest — guías de usuario</a></li><li><a href="https://restic.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">Restic — documentación</a></li><li><a href="https://min.io/docs/minio/linux/index.html" target="_blank" rel="noopener noreferrer">MinIO — documentación</a></li><li><a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener noreferrer">Prometheus — documentación</a></li><li><a href="https://grafana.com/docs/grafana/latest/" target="_blank" rel="noopener noreferrer">Grafana — documentación</a></li><li><a href="https://github.com/louislam/uptime-kuma" target="_blank" rel="noopener noreferrer">Uptime Kuma — repositorio oficial</a></li></ul>
+<h4 id="referencias-complementarias">Referencias complementarias</h4>
+<ul><li><a href="https://hitofusion-doc.netlify.app/" target="_blank" rel="noopener noreferrer">Documentación interna de Hitofusion</a></li><li><a href="https://github.com/Yenthe666/InstallScript" target="_blank" rel="noopener noreferrer">Script comunitario de instalación de Odoo</a></li></ul>
+<h3 id="informacion-pendiente-para-la-version-final">Información pendiente para la versión final</h3>
+<ul><li>Inventario de infraestructura de Codimat.</li><li>Usuarios nominales y concurrentes.</li><li>Volumen de datos y crecimiento.</li><li>Requisitos RPO, RTO y disponibilidad.</li><li>Documentación del sistema externo.</li><li>Responsables y matriz RACI definitiva.</li><li>Alcance comercial, cronograma y costos.</li></ul></article>
+</main>
+<footer class="screen-footer"><b>Sección:</b> Informes › Instalación Odoo Local · <b>Estado:</b> borrador para entrega.</footer>
+</body>
+</html>
