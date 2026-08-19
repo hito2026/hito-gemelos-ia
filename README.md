@@ -9,7 +9,9 @@ Este repositorio contiene la wiki pública de HitoFusion. La portada se publica 
 ## Estructura
 
 - `index.html`: portada pública e índice editorial.
+- `infraestructura-local.html`: sección Infraestructura › Local, con arquitectura, ambientes, backups y operación.
 - `assets/style.css`: estilos del sitio.
+- `assets/infrastructure.css`: estilos de la guía de infraestructura y sus acordeones.
 - `docs/EDITORIAL.md`: reglas editoriales, vigencia y seguridad de publicación.
 
 ## Publicación
