@@ -35,7 +35,6 @@
 .prioritized-table tbody tr:nth-child(6) td:first-child::before,
 .prioritized-table tbody tr:nth-child(14) td:first-child::before,
 .prioritized-table tbody tr:nth-child(18) td:first-child::before,
-.prioritized-table tbody tr:nth-child(20) td:first-child::before,
 .prioritized-table tbody tr:nth-child(23) td:first-child::before {
   content: "Etapa posterior";
   background: #eee8d9;
