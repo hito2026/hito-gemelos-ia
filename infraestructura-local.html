@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Infraestructura local recomendada para operar Odoo Enterprise con ambientes separados, despliegues controlados y recuperación verificable">
+  <title>Infraestructura · Local · Wiki de HitoFusion</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/news.css">
+  <link rel="stylesheet" href="assets/infrastructure.css">
+</head>
+<body>
+<header>
+  <div class="top"><a class="brand" href="index.html">HITOFUSION</a><nav><a href="index.html">Inicio</a><a href="#arquitectura">Arquitectura</a><a href="#ambientes">Ambientes</a><a href="#backups">Backups</a><a href="#operacion">Operación</a><a href="#fuentes">Fuentes</a></nav></div>
+  <div class="masthead news-head"><p class="kicker">Infraestructura · Local</p><h1>Operación local de Odoo</h1><p>Arquitectura de referencia para separar ambientes, controlar despliegues y recuperar datos e instancias sin depender de una única herramienta.</p><span class="status">Estado: active · actualizado el 19 de agosto de 2026</span></div>
+</header>
+<main class="news-page infra-page">
+  <nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Wiki</a><span>›</span><b>Infraestructura</b><span>›</span><strong>Local</strong></nav>
+
+  <section class="news-intro">
+    <div><p class="label">Recomendación ejecutiva</p><h2>Una capa, una responsabilidad</h2></div>
+    <div><p>La combinación recomendada es <strong>Proxmox VE + Dokploy + Proxmox Backup Server + pgBackRest + Restic/S3</strong>. Proxmox administra la infraestructura; Dokploy, los despliegues; y las herramientas de backup protegen instancias, base de datos y archivos en capas independientes.</p><p class="note">Esta guía es una arquitectura preliminar. El dimensionamiento final requiere usuarios concurrentes, módulos, crecimiento de datos, carga de integraciones y objetivos RPO/RTO.</p></div>
+  </section>
+
+  <section id="arquitectura" class="wiki-section">
+    <div class="heading"><div><p class="label">Arquitectura</p><h2>Stack tecnológico recomendado</h2></div><p>Abrí cada componente para conocer su función, alcance y criterio de uso.</p></div>
+    <div class="accordion-list">
+      <details open><summary><span><small>Virtualización</small><b>Proxmox VE</b></span><i>Administración central de VPS</i></summary><div class="accordion-body"><p>Crea y aísla las máquinas virtuales de producción, staging y servicios de gestión. Centraliza recursos, redes, permisos, snapshots y crecimiento futuro.</p><ul><li>Separar cada ambiente en una VPS independiente.</li><li>Restringir redes y accesos administrativos.</li><li>Usar snapshots como apoyo operativo, no como reemplazo del backup.</li></ul><a href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html" target="_blank" rel="noopener noreferrer">Documentación oficial de Proxmox VE →</a></div></details>
+      <details><summary><span><small>Despliegues</small><b>Dokploy + Docker Compose + Git</b></span><i>Publicación trazable por ambiente</i></summary><div class="accordion-body"><p>Gestiona servicios, variables, dominios, certificados, logs y despliegues desde repositorios versionados. Producción y staging deben tener proyectos, credenciales y datos separados.</p><ul><li>Definir la aplicación como código con Docker Compose.</li><li>Desplegar desde ramas o versiones aprobadas.</li><li>Conservar evidencia de homologación y procedimiento de rollback.</li></ul><a href="https://docs.dokploy.com/docs/core/docker-compose" target="_blank" rel="noopener noreferrer">Docker Compose en Dokploy →</a></div></details>
+      <details><summary><span><small>Instancias</small><b>Proxmox Backup Server</b></span><i>Recuperación integral ante desastre</i></summary><div class="accordion-body"><p>Realiza respaldos incrementales, deduplicados y verificables de las VPS completas. Debe residir en hardware o almacenamiento independiente del servidor productivo y mantener una segunda copia fuera del sitio.</p><a href="https://pbs.proxmox.com/docs/" target="_blank" rel="noopener noreferrer">Documentación oficial de Proxmox Backup Server →</a></div></details>
+      <details><summary><span><small>Base de datos</small><b>pgBackRest</b></span><i>Backups PostgreSQL y recuperación puntual</i></summary><div class="accordion-body"><p>Protege PostgreSQL mediante backups completos e incrementales, archivo continuo de WAL y recuperación a un punto en el tiempo. Es la capa específica de base de datos y no debe sustituirse por un snapshot de VPS.</p><a href="https://pgbackrest.org/user-guide-index.html" target="_blank" rel="noopener noreferrer">Guías oficiales de pgBackRest →</a></div></details>
+      <details><summary><span><small>Archivos y volúmenes</small><b>Restic + almacenamiento S3</b></span><i>Copias cifradas fuera del servidor</i></summary><div class="accordion-body"><p>Respalda filestore, configuraciones y volúmenes persistentes en un destino S3 compatible. Puede utilizarse MinIO propio siempre que se aloje en una ubicación física independiente.</p><p>Dokploy también admite backup de volúmenes Docker nombrados hacia S3. Los bind mounts no están cubiertos por esa función.</p><div class="link-row"><a href="https://restic.readthedocs.io/en/stable/" target="_blank" rel="noopener noreferrer">Restic →</a><a href="https://docs.dokploy.com/docs/core/volume-backups" target="_blank" rel="noopener noreferrer">Backups de volúmenes en Dokploy →</a><a href="https://min.io/docs/minio/linux/index.html" target="_blank" rel="noopener noreferrer">MinIO →</a></div></div></details>
+      <details><summary><span><small>Observabilidad</small><b>Uptime Kuma + Prometheus + Grafana</b></span><i>Disponibilidad, métricas y alertas</i></summary><div class="accordion-body"><p>Uptime Kuma cubre controles simples de disponibilidad. Prometheus recopila métricas y Grafana permite visualizarlas y construir alertas operativas.</p><div class="link-row"><a href="https://github.com/louislam/uptime-kuma" target="_blank" rel="noopener noreferrer">Uptime Kuma →</a><a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener noreferrer">Prometheus →</a><a href="https://grafana.com/docs/grafana/latest/" target="_blank" rel="noopener noreferrer">Grafana →</a></div></div></details>
+    </div>
+  </section>
+
+  <section id="ambientes" class="wiki-section">
+    <div class="heading"><div><p class="label">Ambientes</p><h2>Separación obligatoria</h2></div><p>La similitud técnica entre ambientes no implica compartir datos ni credenciales.</p></div>
+    <div class="accordion-list compact">
+      <details open><summary><span><small>Ambiente 01</small><b>Producción</b></span><i>Operación real</i></summary><div class="accordion-body"><p>VPS dimensionada según carga, con acceso restringido, monitoreo, backups activos y cambios exclusivamente mediante el proceso aprobado.</p></div></details>
+      <details><summary><span><small>Ambiente 02</small><b>Staging u homologación</b></span><i>Validación previa</i></summary><div class="accordion-body"><p>Debe reproducir versiones, módulos y configuración relevante de producción. Utiliza datos anonimizados, credenciales neutralizadas y capacidad suficiente para probar restauraciones, integraciones y despliegues.</p></div></details>
+      <details><summary><span><small>Ambiente 03</small><b>Desarrollo</b></span><i>Construcción y pruebas técnicas</i></summary><div class="accordion-body"><p>Espacio aislado para módulos, configuración y pruebas unitarias. No accede a credenciales productivas ni publica cambios directamente.</p></div></details>
+    </div>
+  </section>
+
+  <section id="backups" class="wiki-section">
+    <div class="heading"><div><p class="label">Continuidad</p><h2>Backup y recuperación</h2></div><p>Un backup solo es válido cuando su restauración fue verificada.</p></div>
+    <div class="policy-card"><b>Regla 3-2-1</b><span>Tres copias</span><span>Dos medios distintos</span><span>Una copia fuera del sitio</span></div>
+    <div class="accordion-list">
+      <details open><summary><span><small>Capa 01</small><b>PostgreSQL</b></span><i>pgBackRest + WAL</i></summary><div class="accordion-body"><p>Definir backups completos e incrementales, archivo continuo de WAL, retención y recuperación a un punto en el tiempo según el RPO aprobado.</p></div></details>
+      <details><summary><span><small>Capa 02</small><b>Filestore, configuración y volúmenes</b></span><i>Restic o Dokploy hacia S3</i></summary><div class="accordion-body"><p>Coordinar el respaldo del filestore con la base de datos para evitar estados incompatibles. Incluir configuraciones necesarias para reconstruir el servicio y mantener las credenciales fuera del repositorio.</p></div></details>
+      <details><summary><span><small>Capa 03</small><b>VPS completa</b></span><i>Proxmox Backup Server</i></summary><div class="accordion-body"><p>Permite recuperar la instancia ante pérdida de infraestructura. No reemplaza la recuperación granular de PostgreSQL y archivos.</p></div></details>
+      <details><summary><span><small>Control</small><b>Pruebas de restauración</b></span><i>Evidencia periódica</i></summary><div class="accordion-body"><p>Documentar frecuencia, responsable, duración, resultado y acciones correctivas. Probar la restauración conjunta de base, filestore, código y configuración antes de la salida a producción y luego de forma periódica.</p></div></details>
+    </div>
+  </section>
+
+  <section id="operacion" class="wiki-section">
+    <div class="heading"><div><p class="label">Gobierno técnico</p><h2>Operación y cambios</h2></div><p>La herramienta automatiza el despliegue; la aprobación continúa siendo humana y trazable.</p></div>
+    <ol class="process"><li>Ticket y análisis</li><li>Desarrollo o configuración</li><li>Revisión técnica</li><li>Prueba en staging</li><li>Aprobación</li><li>Despliegue</li><li>Validación o rollback</li></ol>
+    <div class="accordion-list compact">
+      <details><summary><span><small>Accesos</small><b>Seguridad mínima</b></span><i>Mínimo privilegio</i></summary><div class="accordion-body"><ul><li>Accesos nominados, MFA y VPN o bastión para administración.</li><li>Secretos fuera del código y rotación periódica.</li><li>HTTPS/TLS, puertos restringidos y registro de accesos.</li></ul></div></details>
+      <details><summary><span><small>Capacidad</small><b>Datos para dimensionar</b></span><i>No estimar sin métricas</i></summary><div class="accordion-body"><ul><li>Usuarios nominales y concurrentes.</li><li>Módulos, procesos críticos y tareas programadas.</li><li>Tamaño y crecimiento de PostgreSQL y filestore.</li><li>Volumen y frecuencia de integraciones.</li><li>Disponibilidad requerida, RPO y RTO.</li></ul></div></details>
+    </div>
+  </section>
+
+  <section id="fuentes" class="sources">
+    <div><p class="label">Trazabilidad</p><h2>Fuentes oficiales</h2></div>
+    <div><ul><li><a href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html">Proxmox VE — guía de administración</a></li><li><a href="https://pbs.proxmox.com/docs/">Proxmox Backup Server — documentación</a></li><li><a href="https://docs.dokploy.com/docs/core/docker-compose">Dokploy — Docker Compose</a></li><li><a href="https://docs.dokploy.com/docs/core/volume-backups">Dokploy — backup de volúmenes</a></li><li><a href="https://pgbackrest.org/user-guide-index.html">pgBackRest — guías de usuario</a></li><li><a href="https://restic.readthedocs.io/en/stable/">Restic — documentación</a></li><li><a href="https://min.io/docs/minio/linux/index.html">MinIO — documentación</a></li><li><a href="https://prometheus.io/docs/introduction/overview/">Prometheus — documentación</a></li><li><a href="https://grafana.com/docs/grafana/latest/">Grafana — documentación</a></li><li><a href="https://github.com/louislam/uptime-kuma">Uptime Kuma — repositorio oficial</a></li></ul><p class="note">Contenido derivado del informe ejecutivo de factibilidad de instalación local de Odoo Enterprise 19.0 para Codimat, aprobado para incorporación a la wiki el 19 de agosto de 2026. No contiene credenciales, direcciones internas ni datos operativos del cliente.</p></div>
+  </section>
+</main>
+<footer><b>Sección:</b> Infraestructura › Local · <b>Estado:</b> <code>active</code> · <b>Audiencia:</b> pública.</footer>
+</body>
+</html>
