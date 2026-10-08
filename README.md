@@ -9,6 +9,8 @@ Este repositorio contiene la wiki pública de HitoFusion. La portada se publica 
 ## Estructura
 
 - `index.html`: portada pública e índice editorial.
+- `integraciones/`: portada y once documentos técnicos recuperados sobre DeltaV,
+  Producción y alternativas de integración con Odoo.
 - `infraestructura-local.html`: sección Infraestructura › Local, con arquitectura, ambientes, backups y operación.
 - `informe-instalacion-odoo-local.html`: informe ejecutivo completo con formato web e impresión A4.
 - `assets/style.css`: estilos del sitio.
