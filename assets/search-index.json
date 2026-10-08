@@ -1,0 +1,1449 @@
+[
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "1. Introducción",
+    "url": "/integraciones/produccion/api-doc/#1-introducci-n"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "2. Casos de integración",
+    "url": "/integraciones/produccion/api-doc/#2-casos-de-integraci-n"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "3. Autenticación",
+    "url": "/integraciones/produccion/api-doc/#3-autenticaci-n"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "4. Convenciones",
+    "url": "/integraciones/produccion/api-doc/#4-convenciones"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "5. Sincronización de datos maestros",
+    "url": "/integraciones/produccion/api-doc/#5-sincronizaci-n-de-datos-maestros"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6. Endpoints",
+    "url": "/integraciones/produccion/api-doc/#6-endpoints"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.1 Productos",
+    "url": "/integraciones/produccion/api-doc/#6-1-productos"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.2 Listas de materiales",
+    "url": "/integraciones/produccion/api-doc/#6-2-listas-de-materiales"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.3 Caso A — Demanda por venta",
+    "url": "/integraciones/produccion/api-doc/#6-3-caso-a-demanda-por-venta"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.4 Caso B — Producción directa",
+    "url": "/integraciones/produccion/api-doc/#6-4-caso-b-producci-n-directa"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.5 Consulta de estado",
+    "url": "/integraciones/produccion/api-doc/#6-5-consulta-de-estado"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "6.6 Maestros secundarios",
+    "url": "/integraciones/produccion/api-doc/#6-6-maestros-secundarios"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "7. Errores",
+    "url": "/integraciones/produccion/api-doc/#7-errores"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "8. Mapeo interno con Odoo",
+    "url": "/integraciones/produccion/api-doc/#8-mapeo-interno-con-odoo"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "API Doc — Integración Odoo Producción",
+    "url": "/integraciones/produccion/api-doc/",
+    "text": "API Doc — Integración Odoo Producción Versión 14 | Base path: /api/v1 | Formato: JSON UTF-8 | Autenticación: Bearer Token 1. Introducción Esta API conecta un sistema externo con Odoo para soportar procesos del módulo de Producción . Define de forma unificada los endpoints, contratos de datos, validaciones y reglas de sincronización para operar con demanda comercial, órdenes de fabricación y maestros compartidos. Dominio Alcance Ventas Recepción de demanda comercial Producción Órdenes de fabricación directas o derivadas Maestros Productos, BOMs, clientes, almacenes 2. Casos de integración Caso A — Demanda por venta El sistema externo informa una demanda comercial. La API registra la venta en Odoo y el ERP genera la fabricación mediante su flujo estándar de abastecimiento y MRP. Aplica cuando existe pedido, cliente y compromiso comercial. Preserva trazabilidad: venta → producción. Caso B — Producción directa El sistema externo actúa como planificador y la API crea directamente la orden de fabricación en Odoo con los datos de planificación necesarios. Aplica cuando el sistema externo es planificador o MES. Permite fabricar sin depender de una venta previa. 3. Autenticación Elemento Valor Header Authorization: Bearer <token> Sistema origen X-Source-System: <codigo_sistema> Idempotencia Idempotency-Key: <uuid> para POST/PUT Trazabilidad X-Correlation-Id: <uuid> recomendado 4. Convenciones Regla Detalle Formato JSON UTF-8 Fechas ISO 8601 ( 2026-06-26T10:00:00Z ) Claves externas external_id obligatorio en toda entidad Idempotencia Cada POST/PUT debe ser idempotente por Idempotency-Key y por external_id Maestros previos Los maestros primarios deben existir antes de enviar demanda o producción Referencias cruzadas Se resuelven siempre por clave externa, no por IDs internos de Odoo Envelope de respuesta { \"success\": true, \"data\": {}, \"meta\": { \"correlation_id\": \"...\", \"timestamp\": \"2026-06-26T23:30:00Z\" }, \"errors\": [] } 5. Sincronización de datos maestros Prioridad de maestros Maestro Prioridad Uso Obligatorio en Clave externa Producto Primario Fabricación / venta / consumo Casos A y B product_external_id Lista de materiales Primario Definición de componentes Casos A y B bom_external_id Cliente Secundario Demanda comercial Caso A customer_external_id Proveedor Secundario Abastecimiento / trazabilidad Opcional vendor_external_id Almacén / Ubicación Secundario Stock y reservas Casos A y B warehouse_code / location_code Unidad de medida Secundario Cantidades Casos A y B uom_code Routing / Work Center Secundario Planificación operativa Caso B routing_external_id Estrategia técnica Sincronización incremental por endpoint de upsert. Conciliación nocturna opcional para detectar diferencias. Versionado recomendado para BOMs mediante version o effective_from . Bloqueo de integración transaccional si faltan productos o BOMs requeridos. 6. Endpoints Autenticación y headers comunes Todos los endpoints requieren: Authorization: Bearer <token> X-Source-System: <codigo_sistema> Content-Type: application/json 6.1 Productos POST /api/v1/master-data/products/upsert Crea o actualiza productos necesarios para venta, fabricación y consumo. Request Campo Tipo Req Descripción external_id string ✅ Identificador único del producto en sistema origen sku string ✅ Código de producto name string ✅ Nombre comercial / interno type string ✅ storable \\ consumable \\ service uom_code string ✅ Unidad de medida base can_be_sold boolean Venta habilitada can_be_purchased boolean Compra habilitada can_be_manufactured boolean Fabricación habilitada tracking string none \\ lot \\ serial active boolean Estado activo { \"external_id\": \"PROD-1001\", \"sku\": \"PT-1001\", \"name\": \"Producto terminado A\", \"type\": \"storable\", \"uom_code\": \"UN\", \"can_be_sold\": true, \"can_be_manufactured\": true, \"tracking\": \"lot\", \"active\": true } Response { \"success\": true, \"data\": { \"external_id\": \"PROD-1001\", \"odoo_model\": \"product.product\", \"odoo_id\": 2481, \"status\": \"upserted\" }, \"errors\": [] } 6.2 Listas de materiales POST /api/v1/master-data/boms/upsert Crea o actualiza listas de materiales y sus componentes. Request Campo Tipo Req Descripción external_id string ✅ Identificador único de la BOM product_external_id string ✅ Producto fabricado uom_code string ✅ Unidad de medida de la BOM base_quantity number ✅ Cantidad base de fabricación version string Versión lógica routing_external_id string Routing asociado components array ✅ Detalle de materiales components[] Campo Tipo Req Descripción component_product_external_id string ✅ Producto componente quantity number ✅ Cantidad requerida uom_code string ✅ Unidad de medida operation_external_id string Operación asociada scrap_factor number Merma esperada { \"external_id\": \"BOM-PT-1001-V1\", \"product_external_id\": \"PROD-1001\", \"uom_code\": \"UN\", \"base_quantity\": 1, \"version\": \"v1\", \"routing_external_id\": \"ROUT-010\", \"components\": [ { \"component_product_external_id\": \"MAT-2001\", \"quantity\": 2, \"uom_code\": \"UN\" }, { \"component_product_external_id\": \"MAT-2002\", \"quantity\": 0.5, \"uom_code\": \"KG\", \"scrap_factor\": 0.03 } ] } 6.3 Caso A — Demanda por venta POST /api/v1/case-a/sales-orders El sistema externo envía una demanda comercial. La API crea una orden de venta y Odoo genera la fabricación mediante su flujo estándar de reaprovisionamiento/MRP. Request Campo Tipo Req Descripción external_order_id string ✅ Identificador único del pedido externo customer_external_id string ✅ Cliente order_date datetime ✅ Fecha del pedido requested_date datetime Fecha deseada warehouse_code string ✅ Almacén de ejecución lines array ✅ Detalle de demanda notes string Observaciones lines[] Campo Tipo Req Descripción line_external_id string ✅ Identificador de línea product_external_id string ✅ Producto demandado quantity number ✅ Cantidad uom_code string Unidad de medida price_unit number Precio unitario bom_external_id string BOM a priorizar si aplica { \"external_order_id\": \"SO-EXT-9001\", \"customer_external_id\": \"CUST-5001\", \"order_date\": \"2026-06-26T10:00:00Z\", \"warehouse_code\": \"WH-01\", \"lines\": [ { \"line_external_id\": \"SO-EXT-9001-1\", \"product_external_id\": \"PROD-1001\", \"quantity\": 120, \"uom_code\": \"UN\", \"price_unit\": 0 } ] } Response { \"success\": true, \"data\": { \"external_order_id\": \"SO-EXT-9001\", \"sale_order\": {\"odoo_id\": 981, \"name\": \"S000981\"}, \"manufacturing\": {\"status\": \"triggered\"} }, \"errors\": [] } 6.4 Caso B — Producción directa POST /api/v1/case-b/manufacturing-orders El sistema externo decide qué producir y la API crea directamente la orden de fabricación en Odoo. Request Campo Tipo Req Descripción external_mo_id string ✅ Identificador único de orden externa product_external_id string ✅ Producto a fabricar bom_external_id string ✅ Lista de materiales quantity number ✅ Cantidad a producir uom_code string Unidad de medida planned_start datetime ✅ Inicio planificado planned_finish datetime Fin planificado warehouse_code string ✅ Almacén de ejecución routing_external_id string Routing específico priority string Prioridad origin_reference string Referencia de planificación { \"external_mo_id\": \"MO-EXT-7001\", \"product_external_id\": \"PROD-1001\", \"bom_external_id\": \"BOM-PT-1001-V1\", \"quantity\": 250, \"planned_start\": \"2026-06-27T08:00:00Z\", \"warehouse_code\": \"WH-01\", \"routing_external_id\": \"ROUT-010\", \"priority\": \"high\" } Response { \"success\": true, \"data\": { \"external_mo_id\": \"MO-EXT-7001\", \"manufacturing_order\": {\"odoo_id\": 4521, \"name\": \"MO/004521\"}, \"state\": \"confirmed\" }, \"errors\": [] } 6.5 Consulta de estado GET /api/v1/status/production-orders/{external_id} Consulta el estado consolidado de una demanda u orden de producción. Response Campo Tipo Descripción external_id string Identificador consultado case_type string case_a o case_b odoo_document object ID y nombre interno state string Estado de fabricación reserved_components boolean Reserva de insumos produced_qty number Cantidad producida last_sync_at datetime Última actualización 6.6 Maestros secundarios Endpoint Uso Carácter Campos mínimos POST /api/v1/master-data/customers/upsert Demanda comercial caso A Condicional external_id , name , vat / tax_id POST /api/v1/master-data/vendors/upsert Abastecimiento Opcional external_id , name , vat / tax_id POST /api/v1/master-data/warehouses/upsert Stock / reservas Recomendado warehouse_code , name POST /api/v1/master-data/routings/upsert Operaciones productivas Condicional external_id , name , operations[] 7. Errores HTTP Código Causa Acción 400 VALIDATION_ERROR Contrato inválido Corregir payload 401 UNAUTHORIZED Token inválido Renovar credenciales 404 MASTER_NOT_FOUND Producto/BOM/cliente inexistente Sincronizar maestro 409 DUPLICATED_REQUEST Idempotency-Key o external_id repetido No reenviar sin revisar 422 BUSINESS_RULE_ERROR Regla de negocio no satisfecha Revisar configuración Odoo 503 ODOO_UNAVAILABLE Falla del ERP o adaptador Retry controlado { \"success\": false, \"data\": null, \"errors\": [ { \"code\": \"MASTER_NOT_FOUND\", \"message\": \"No existe product_external_id=PROD-1001\", \"field\": \"product_external_id\" } ] } 8. Mapeo interno con Odoo API pública Modelo Odoo Operación esperada /master-data/products/upsert product.template / product.product Alta/actualización de producto /master-data/boms/upsert mrp.bom / mrp.bom.line Alta/actualización de BOM /master-data/customers/upsert res.partner Alta/actualización de cliente /case-a/sales-orders sale.order / sale.order.line Creación y confirmación de venta /case-b/manufacturing-orders mrp.production Creación, confirmación y planificación /status/production-orders/{id} mrp.production / stock.move / mrp.workorder Lectura de estado consolidado Nota de implementación: el adaptador Odoo debe resolver referencias externas en tablas de equivalencia o campos dedicados ( x_external_id ) y preservar unicidad por modelo. 📄 Fuente: Informe de Integración Odoo Producción v14"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Autenticación y headers comunes",
+    "url": "/integraciones/produccion/api-doc/#autenticaci-n-y-headers-comunes"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Caso A — Demanda por venta",
+    "url": "/integraciones/produccion/api-doc/#caso-a-demanda-por-venta"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Caso B — Producción directa",
+    "url": "/integraciones/produccion/api-doc/#caso-b-producci-n-directa"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "components[]",
+    "url": "/integraciones/produccion/api-doc/#components"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Envelope de respuesta",
+    "url": "/integraciones/produccion/api-doc/#envelope-de-respuesta"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Estrategia técnica",
+    "url": "/integraciones/produccion/api-doc/#estrategia-t-cnica"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "lines[]",
+    "url": "/integraciones/produccion/api-doc/#lines"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Prioridad de maestros",
+    "url": "/integraciones/produccion/api-doc/#prioridad-de-maestros"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Request",
+    "url": "/integraciones/produccion/api-doc/#request"
+  },
+  {
+    "page": "API Doc — Integración Odoo Producción",
+    "topic": "Response",
+    "url": "/integraciones/produccion/api-doc/#response"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "1. Autenticación",
+    "url": "/integraciones/deltav/api-rest/#1-autenticaci-n"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "2. Convenciones",
+    "url": "/integraciones/deltav/api-rest/#2-convenciones"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "2. Crear Contacto",
+    "url": "/integraciones/deltav/api-rest/#2-crear-contacto"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3. Crear Producto",
+    "url": "/integraciones/deltav/api-rest/#3-crear-producto"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3. Endpoints",
+    "url": "/integraciones/deltav/api-rest/#3-endpoints"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3.1 Health Check",
+    "url": "/integraciones/deltav/api-rest/#3-1-health-check"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3.2 Contactos",
+    "url": "/integraciones/deltav/api-rest/#3-2-contactos"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3.3 Productos",
+    "url": "/integraciones/deltav/api-rest/#3-3-productos"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3.4 Lista de Materiales (BoM)",
+    "url": "/integraciones/deltav/api-rest/#3-4-lista-de-materiales-bom"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "3.5 Pagos",
+    "url": "/integraciones/deltav/api-rest/#3-5-pagos"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "4. Crear Producto con variantes",
+    "url": "/integraciones/deltav/api-rest/#4-crear-producto-con-variantes"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "4. Manejo de Errores",
+    "url": "/integraciones/deltav/api-rest/#4-manejo-de-errores"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "5. Crear BoM",
+    "url": "/integraciones/deltav/api-rest/#5-crear-bom"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "5. Idempotencia y Mapeo",
+    "url": "/integraciones/deltav/api-rest/#5-idempotencia-y-mapeo"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "6. Mapeo de Campos Odoo ↔ API",
+    "url": "/integraciones/deltav/api-rest/#6-mapeo-de-campos-odoo-api"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "6. Registrar Pago",
+    "url": "/integraciones/deltav/api-rest/#6-registrar-pago"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "7. Ejemplos de Integración (curl)",
+    "url": "/integraciones/deltav/api-rest/#7-ejemplos-de-integraci-n-curl"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8. Contrato de Notificaciones Salientes",
+    "url": "/integraciones/deltav/api-rest/#8-contrato-de-notificaciones-salientes"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8.1 Endpoints que el Sistema Externo debe exponer",
+    "url": "/integraciones/deltav/api-rest/#8-1-endpoints-que-el-sistema-externo-debe-exponer"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8.2 Payload de Notificación — Venta",
+    "url": "/integraciones/deltav/api-rest/#8-2-payload-de-notificaci-n-venta"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8.3 Payload de Notificación — Compra",
+    "url": "/integraciones/deltav/api-rest/#8-3-payload-de-notificaci-n-compra"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8.4 Configuración del Módulo",
+    "url": "/integraciones/deltav/api-rest/#8-4-configuraci-n-del-m-dulo"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "8.5 Errores y reintentos",
+    "url": "/integraciones/deltav/api-rest/#8-5-errores-y-reintentos"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "API REST de Integración — Deltav → Odoo 17",
+    "url": "/integraciones/deltav/api-rest/",
+    "text": "API REST de Integración — Deltav → Odoo 17 Versión: 1.0 — Julio 2026 Base URL: https://api-integracion.mi-empresa.com/v1 Protocolo: REST/JSON sobre HTTPS Autenticación: Bearer Token (JWT) obtenido con API Key de Odoo 1. Autenticación El sistema externo debe autenticarse con la API Key de Odoo para obtener un token JWT de corta duración. POST /v1/auth/token Request: { \"api_key\": \"a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx\" } Response 200 OK: { \"access_token\": \"eyJhbGciOiJIUzI1NiIs...\", \"token_type\": \"bearer\", \"expires_in\": 3600, \"odoo_uid\": 7 } Uso en llamadas subsiguientes: Authorization: Bearer eyJhbGciOiJIUzI1NiIs... Errores de autenticación: Status Code Descripción 401 AUTHENTICATION_ERROR API Key inválida o expirada 401 TOKEN_EXPIRED El JWT expiró, re-autenticar 2. Convenciones Regla Detalle Content-Type Todas las requests y responses usan application/json Fechas ISO 8601: \"2026-07-02T15:30:00Z\" (datetime) o \"2026-07-02\" (date) IDs externos external_ref es un string alfanumérico (máx. 255 chars) que identifica de forma única y estable a cada entidad en el sistema externo Monedas Se usa el ID de res.currency en Odoo (ej. 2 = USD, 3 = EUR, 21 = ARS) Países Código ISO 3166-1 alpha-2: \"US\", \"AR\", \"ES\", etc. POST es upsert Si el external_ref ya existe → se actualiza el registro. Si no → se crea Campos no enviados No se modifican en Odoo (merge parcial) Orden de carga 1º Contactos → 2º Productos → 3º BoMs → 4º Pagos 3. Endpoints 3.1 Health Check GET /v1/health Response 200 OK: { \"status\": \"healthy\", \"odoo_version\": \"17.0\", \"odoo_connected\": true, \"timestamp\": \"2026-07-02T17:00:00Z\" } 3.2 Contactos Modelo Odoo: res.partner Crear o Actualizar POST /v1/contacts Request Body: { \"external_ref\": \"EXT-CUST-001\", \"name\": \"Acme Corporation\", \"is_company\": true, \"vat\": \"US123456789\", \"email\": \"info@acme.com\", \"phone\": \"+1-555-0100\", \"mobile\": \"+1-555-0101\", \"website\": \"https://acme.com\", \"street\": \"123 Main St\", \"street2\": \"Suite 400\", \"city\": \"San Francisco\", \"state\": \"California\", \"zip\": \"94105\", \"country_code\": \"US\", \"is_customer\": true, \"is_supplier\": false, \"payment_term\": \"immediate\", \"contacts\": [ { \"name\": \"John Doe\", \"email\": \"john@acme.com\", \"phone\": \"+1-555-0200\", \"position\": \"CFO\" } ], \"tags\": [\"enterprise\", \"premium\"] } Parámetros: Campo Tipo Requerido Default Descripción external_ref string (max 255) ✅ — ID único del sistema externo name string ✅ — Nombre o razón social is_company boolean ❌ false true si es empresa vat string ❌ — Nº de identificación fiscal email string ❌ — Email principal phone string ❌ — Teléfono fijo mobile string ❌ — Teléfono móvil website string ❌ — URL del sitio web street string ❌ — Dirección (calle y número) street2 string ❌ — Complemento de dirección city string ❌ — Ciudad state string ❌ — Provincia / Estado zip string ❌ — Código postal country_code string (ISO 2) ❌ — Código de país (\"US\", \"AR\") is_customer boolean ❌ false Marca como cliente is_supplier boolean ❌ false Marca como proveedor payment_term string ❌ — \"immediate\", \"net_15\", \"net_30\", \"net_60\" contacts array ❌ — Contactos hijos (personas asociadas) contacts[].name string ✅ (si se envía) — Nombre del contacto contacts[].email string ❌ — Email del contacto contacts[].phone string ❌ — Teléfono contacts[].position string ❌ — Cargo / función tags array of string ❌ — Etiquetas / categorías Response 201 Created: { \"status\": \"created\", \"external_ref\": \"EXT-CUST-001\", \"odoo_id\": 42, \"name\": \"Acme Corporation\", \"created_at\": \"2026-07-02T17:00:00Z\" } Response 200 OK (actualización): { \"status\": \"updated\", \"external_ref\": \"EXT-CUST-001\", \"odoo_id\": 42, \"name\": \"Acme Corporation\", \"updated_at\": \"2026-07-02T17:05:00Z\" } Consultar Contacto GET /v1/contacts/{external_ref} Parámetros de búsqueda (query string): Parámetro Tipo Descripción search string Búsqueda por nombre (ilike) is_customer boolean Filtrar clientes is_supplier boolean Filtrar proveedores country_code string Filtrar por país limit integer Máx. resultados (default: 20) offset integer Paginación (default: 0) Ejemplo: GET /v1/contacts?search=Acme&is_customer=true&limit=20 Response 200 OK: { \"external_ref\": \"EXT-CUST-001\", \"odoo_id\": 42, \"name\": \"Acme Corporation\", \"is_company\": true, \"vat\": \"US123456789\", \"email\": \"info@acme.com\", \"phone\": \"+1-555-0100\", \"mobile\": \"+1-555-0101\", \"website\": \"https://acme.com\", \"street\": \"123 Main St\", \"street2\": \"Suite 400\", \"city\": \"San Francisco\", \"state\": \"California\", \"zip\": \"94105\", \"country\": \"United States\", \"country_code\": \"US\", \"is_customer\": true, \"is_supplier\": false, \"payment_term\": \"immediate\", \"contacts\": [ { \"odoo_id\": 43, \"name\": \"John Doe\", \"email\": \"john@acme.com\", \"phone\": \"+1-555-0200\", \"position\": \"CFO\" } ], \"tags\": [\"enterprise\", \"premium\"] } Errores específicos: Status Code Caso 404 NOT_FOUND external_ref no existe 400 VALIDATION_ERROR Falta name o external_ref 400 INVALID_COUNTRY country_code no es un código ISO-2 válido 3.3 Productos Modelos Odoo: product.template + product.product Crear o Actualizar POST /v1/products Request Body (producto simple): { \"external_ref\": \"EXT-PROD-001\", \"name\": \"Laptop Pro 15\\\"\", \"default_code\": \"LP15-2026\", \"barcode\": \"1234567890123\", \"type\": \"product\", \"list_price\": 1299.99, \"standard_price\": 850.00, \"currency_id\": 2, \"uom_id\": 1, \"uom_po_id\": 1, \"description\": \"Laptop profesional 15 pulgadas, 16GB RAM, 512GB SSD\", \"description_purchase\": \"Laptop Pro 15\\\" — pedido mayorista\", \"sale_ok\": true, \"purchase_ok\": true, \"active\": true, \"categ_id\": \"Laptops\", \"taxes_id\": [\"15% VAT\"], \"supplier_taxes_id\": [\"15% VAT\"], \"weight\": 1.8, \"volume\": 0.005 } Request Body (producto con variantes): { \"external_ref\": \"EXT-PROD-002\", \"name\": \"Camiseta Algodón Premium\", \"default_code\": \"TSH-PRM\", \"type\": \"product\", \"list_price\": 29.99, \"attributes\": [ { \"name\": \"Talle\", \"values\": [\"S\", \"M\", \"L\", \"XL\"] }, { \"name\": \"Color\", \"values\": [\"Negro\", \"Blanco\", \"Azul\"] } ] } Parámetros: Campo Tipo Requerido Default Descripción external_ref string (max 255) ✅ — ID único del sistema externo name string ✅ — Nombre del producto default_code string ❌ — SKU / referencia interna barcode string ❌ — Código de barras (EAN13/UPC) type string ❌ \"product\" \"product\" (stockable), \"consu\" (consumible), \"service\" list_price number ❌ 0.00 Precio de venta standard_price number ❌ 0.00 Costo estándar currency_id integer ❌ moneda cia. ID de moneda en Odoo uom_id integer ❌ 1 (Unidades) Unidad de medida de venta uom_po_id integer ❌ 1 (Unidades) Unidad de medida de compra description string ❌ — Descripción para ventas description_purchase string ❌ — Descripción para compras sale_ok boolean ❌ true Habilitado para venta purchase_ok boolean ❌ true Habilitado para compra active boolean ❌ true Producto activo categ_id string ❌ — Categoría (se busca o crea por nombre) taxes_id array of string ❌ — Impuestos de venta (por nombre) supplier_taxes_id array of string ❌ — Impuestos de compra (por nombre) weight number ❌ — Peso en kg volume number ❌ — Volumen en m³ attributes array ❌ — Atributos para generar variantes attributes[].name string ✅ (si se envía) — Nombre del atributo (ej. \"Color\") attributes[].values array of string ✅ (si se envía) — Valores del atributo suppliers array ❌ — Información de proveedores suppliers[].partner_external_ref string ✅ (si se envía) — external_ref del proveedor suppliers[].price number ✅ (si se envía) — Precio de compra suppliers[].min_qty number ❌ 0 Cantidad mínima suppliers[].delay integer ❌ 0 Días de entrega Response 201 Created (con variantes): { \"status\": \"created\", \"external_ref\": \"EXT-PROD-002\", \"odoo_template_id\": 16, \"default_code\": \"TSH-PRM\", \"name\": \"Camiseta Algodón Premium\", \"variants\": [ { \"odoo_id\": 40, \"name\": \"Camiseta Algodón Premium (S, Negro)\", \"default_code\": \"TSH-PRM-S-NEG\" }, { \"odoo_id\": 41, \"name\": \"Camiseta Algodón Premium (S, Blanco)\", \"default_code\": \"TSH-PRM-S-BCO\" } ], \"variants_count\": 12, \"created_at\": \"2026-07-02T17:00:00Z\" } Response 200 OK (actualización): { \"status\": \"updated\", \"external_ref\": \"EXT-PROD-001\", \"odoo_template_id\": 15, \"updated_at\": \"2026-07-02T17:05:00Z\" } Consultar Producto GET /v1/products/{external_ref} Parámetros de búsqueda: Parámetro Tipo Descripción search string Búsqueda por nombre o SKU type string \"product\", \"consu\", \"service\" categ_id string Filtrar por categoría active boolean Solo activos/inactivos limit integer Default: 20 offset integer Default: 0 Response 200 OK: { \"external_ref\": \"EXT-PROD-001\", \"odoo_template_id\": 15, \"name\": \"Laptop Pro 15\\\"\", \"default_code\": \"LP15-2026\", \"barcode\": \"1234567890123\", \"type\": \"product\", \"list_price\": 1299.99, \"standard_price\": 850.00, \"currency\": { \"id\": 2, \"name\": \"USD\" }, \"uom\": { \"id\": 1, \"name\": \"Units\" }, \"categ\": { \"id\": 5, \"name\": \"Laptops\" }, \"description\": \"Laptop profesional 15 pulgadas, 16GB RAM, 512GB SSD\", \"sale_ok\": true, \"purchase_ok\": true, \"active\": true, \"taxes\": [{ \"id\": 1, \"name\": \"15% VAT\" }], \"weight\": 1.8, \"volume\": 0.005, \"qty_available\": 45, \"virtual_available\": 30, \"variants\": [ { \"odoo_id\": 30, \"default_code\": \"LP15-SLV-16\", \"name\": \"Laptop Pro 15\\\" (Silver, 16GB)\", \"attributes\": { \"Color\": \"Silver\", \"RAM\": \"16GB\" }, \"qty_available\": 12 } ], \"suppliers\": [ { \"partner_external_ref\": \"EXT-SUP-001\", \"partner_name\": \"TechDistributors Inc\", \"price\": 780.00, \"min_qty\": 10, \"delay\": 5 } ] } Errores específicos: Status Code Caso 404 NOT_FOUND external_ref no existe 400 VALIDATION_ERROR Falta name o external_ref 400 INVALID_TYPE type no es válido 400 DUPLICATE_SKU default_code ya existe en otro producto 3.4 Lista de Materiales (BoM) Modelos Odoo: mrp.bom + mrp.bom.line Crear o Actualizar POST /v1/boms Request Body: { \"external_ref\": \"EXT-BOM-001\", \"code\": \"BOM-LP15-001\", \"product_external_ref\": \"EXT-PROD-001\", \"product_qty\": 1.0, \"product_uom_id\": 1, \"type\": \"normal\", \"active\": true, \"lines\": [ { \"product_external_ref\": \"EXT-PROD-002\", \"product_qty\": 1.0, \"product_uom_id\": 1 }, { \"product_external_ref\": \"EXT-PROD-003\", \"product_qty\": 2.0, \"product_uom_id\": 1 }, { \"product_external_ref\": \"EXT-PROD-004\", \"product_qty\": 0.05, \"product_uom_id\": 5 } ] } Parámetros: Campo Tipo Requerido Default Descripción external_ref string (max 255) ✅ — ID único del sistema externo code string ❌ — Código de referencia de la BoM product_external_ref string ✅ — external_ref del producto terminado product_qty number ✅ — Cantidad producida por esta BoM product_uom_id integer ❌ 1 (Unidades) Unidad de medida del producto terminado type string ❌ \"normal\" \"normal\", \"phantom\" (kit virtual), \"subcontracting\" active boolean ❌ true BoM activa lines array ✅ — Componentes de la BoM lines[].product_external_ref string ✅ — external_ref del componente lines[].product_qty number ✅ — Cantidad necesaria lines[].product_uom_id integer ❌ 1 (Unidades) Unidad de medida del componente Nota: Las líneas de BoM en Odoo 17 referencian product.product (variante), no product.template. El middleware resuelve automáticamente a la variante por defecto del componente. Response 201 Created: { \"status\": \"created\", \"external_ref\": \"EXT-BOM-001\", \"odoo_id\": 8, \"code\": \"BOM-LP15-001\", \"product\": { \"external_ref\": \"EXT-PROD-001\", \"name\": \"Laptop Pro 15\\\"\" }, \"product_qty\": 1.0, \"type\": \"normal\", \"lines_count\": 3, \"created_at\": \"2026-07-02T17:00:00Z\" } Consultar BoM GET /v1/boms/{external_ref} Parámetros de búsqueda: Parámetro Tipo Descripción product_external_ref string Filtrar por producto terminado type string \"normal\", \"phantom\", \"subcontracting\" active boolean Solo activas/inactivas Response 200 OK: { \"external_ref\": \"EXT-BOM-001\", \"odoo_id\": 8, \"code\": \"BOM-LP15-001\", \"product\": { \"external_ref\": \"EXT-PROD-001\", \"odoo_id\": 15, \"name\": \"Laptop Pro 15\\\"\" }, \"product_qty\": 1.0, \"product_uom\": { \"id\": 1, \"name\": \"Units\" }, \"type\": \"normal\", \"active\": true, \"lines\": [ { \"odoo_id\": 51, \"product\": { \"external_ref\": \"EXT-PROD-002\", \"name\": \"Pantalla 15\\\" IPS\" }, \"product_qty\": 1.0, \"product_uom\": { \"id\": 1, \"name\": \"Units\" } }, { \"odoo_id\": 52, \"product\": { \"external_ref\": \"EXT-PROD-003\", \"name\": \"Módulo RAM 16GB DDR5\" }, \"product_qty\": 2.0, \"product_uom\": { \"id\": 1, \"name\": \"Units\" } }, { \"odoo_id\": 53, \"product\": { \"external_ref\": \"EXT-PROD-004\", \"name\": \"Pasta Térmica Arctic MX-6\" }, \"product_qty\": 0.05, \"product_uom\": { \"id\": 5, \"name\": \"kg\" } } ] } Errores específicos: Status Code Caso 404 NOT_FOUND external_ref no existe 400 DEPENDENCY_NOT_FOUND El product_external_ref o un componente no existe 400 VALIDATION_ERROR product_qty ≤ 0 o lines vacío 400 DUPLICATE_BOM Ya existe una BoM para ese producto con ese code 3.5 Pagos Modelos Odoo: account.payment + account.move Registrar Pago POST /v1/payments Request Body — Cobro de cliente (inbound): { \"external_ref\": \"EXT-PAY-001\", \"payment_type\": \"inbound\", \"partner_type\": \"customer\", \"partner_external_ref\": \"EXT-CUST-001\", \"amount\": 2599.98, \"currency_id\": 2, \"payment_date\": \"2026-07-02\", \"journal_external_ref\": \"BANK-US-01\", \"payment_method\": \"manual\", \"memo\": \"Pago facturas INV-001 e INV-002\", \"matched_invoices\": [ { \"invoice_external_ref\": \"INV-001\", \"amount\": 1299.99 }, { \"invoice_external_ref\": \"INV-002\", \"amount\": 1299.99 } ] } Request Body — Pago a proveedor (outbound): { \"external_ref\": \"EXT-PAY-002\", \"payment_type\": \"outbound\", \"partner_type\": \"supplier\", \"partner_external_ref\": \"EXT-SUP-001\", \"amount\": 8500.00, \"currency_id\": 2, \"payment_date\": \"2026-07-01\", \"journal_external_ref\": \"BANK-US-01\", \"payment_method\": \"bank_transfer\", \"memo\": \"Pago lote componentes Q2 2026\", \"matched_invoices\": [ { \"invoice_external_ref\": \"VENDOR-BILL-005\", \"amount\": 8500.00 } ] } Parámetros: Campo Tipo Requerido Default Descripción external_ref string (max 255) ✅ — ID único del sistema externo para este pago payment_type string ✅ — \"inbound\" (cobro) o \"outbound\" (pago) partner_type string ✅ — \"customer\" o \"supplier\" partner_external_ref string ✅ — external_ref del cliente o proveedor amount number (> 0) ✅ — Monto total del pago currency_id integer ❌ moneda cia. ID de moneda en Odoo payment_date string (date) ✅ — Fecha \"YYYY-MM-DD\" journal_external_ref string ✅ — Referencia del diario contable (mapeado en middleware) payment_method string ❌ \"manual\" \"manual\", \"check\", \"bank_transfer\", \"credit_card\" memo string ❌ — Nota / referencia del pago matched_invoices array ❌ — Facturas a conciliar (si se omite → pago a cuenta) matched_invoices[].invoice_external_ref string ✅ (si se envía) — external_ref de la factura matched_invoices[].amount number ❌ saldo pendiente Monto a conciliar Nota: Las facturas (account.move) deben estar precargadas en Odoo. Este endpoint no las crea. Response 201 Created: { \"status\": \"created\", \"external_ref\": \"EXT-PAY-001\", \"odoo_id\": 156, \"payment_type\": \"inbound\", \"partner_type\": \"customer\", \"partner\": { \"external_ref\": \"EXT-CUST-001\", \"name\": \"Acme Corporation\" }, \"amount\": 2599.98, \"currency\": { \"id\": 2, \"name\": \"USD\" }, \"payment_date\": \"2026-07-02\", \"state\": \"posted\", \"memo\": \"Pago facturas INV-001 e INV-002\", \"matched_invoices\": [ { \"invoice_external_ref\": \"INV-001\", \"odoo_id\": 89, \"invoice_number\": \"INV/2026/0001\", \"amount_matched\": 1299.99 }, { \"invoice_external_ref\": \"INV-002\", \"odoo_id\": 90, \"invoice_number\": \"INV/2026/0002\", \"amount_matched\": 1299.99 } ], \"created_at\": \"2026-07-02T17:00:00Z\" } Consultar Pago GET /v1/payments/{external_ref} Parámetros de búsqueda: Parámetro Tipo Descripción partner_external_ref string Filtrar por cliente/proveedor payment_type string \"inbound\" o \"outbound\" date_from string (date) Pagos desde fecha date_to string (date) Pagos hasta fecha state string \"draft\", \"posted\", \"cancelled\" limit integer Default: 20 offset integer Default: 0 Response 200 OK: { \"external_ref\": \"EXT-PAY-001\", \"odoo_id\": 156, \"payment_type\": \"inbound\", \"partner_type\": \"customer\", \"partner\": { \"external_ref\": \"EXT-CUST-001\", \"odoo_id\": 42, \"name\": \"Acme Corporation\" }, \"amount\": 2599.98, \"currency\": { \"id\": 2, \"name\": \"USD\" }, \"payment_date\": \"2026-07-02\", \"state\": \"posted\", \"journal\": { \"id\": 5, \"name\": \"Bank US\" }, \"payment_method\": \"manual\", \"memo\": \"Pago facturas INV-001 e INV-002\", \"matched_invoices\": [ { \"invoice_external_ref\": \"INV-001\", \"odoo_id\": 89, \"invoice_number\": \"INV/2026/0001\", \"amount_matched\": 1299.99, \"amount_residual\": 0.00 } ] } Errores específicos: Status Code Caso 404 NOT_FOUND external_ref no existe 400 DEPENDENCY_NOT_FOUND partner_ext_ref, journal_ext_ref o invoice_ext_ref no existe 400 VALIDATION_ERROR amount ≤ 0, payment_type inválido 409 BUSINESS_RULE_ERROR Factura ya está totalmente pagada 409 CONFLICT external_ref del pago duplicado 422 JOURNAL_MISMATCH El diario no está configurado para ese payment_type 4. Manejo de Errores Todos los errores retornan esta estructura consistente: { \"error\": { \"code\": \"ERROR_CODE\", \"message\": \"Descripción legible en español\", \"details\": { \"field\": \"información específica\" }, \"request_id\": \"req_a1b2c3d4e5\" } } Catálogo completo de errores HTTP Error Code Descripción 400 VALIDATION_ERROR Campos requeridos faltantes o con formato inválido 400 INVALID_COUNTRY Código de país no válido 400 INVALID_TYPE Tipo de entidad no reconocido 400 DUPLICATE_SKU SKU/default_code duplicado 400 DUPLICATE_BOM BoM duplicada para el producto 400 DEPENDENCY_NOT_FOUND Referencia externa dependiente no existe 401 AUTHENTICATION_ERROR API Key inválida o falta autenticación 401 TOKEN_EXPIRED JWT expirado 403 PERMISSION_DENIED Usuario sin permisos para la operación 404 NOT_FOUND Recurso no encontrado 409 CONFLICT Conflicto de estado (ej. pago duplicado) 409 BUSINESS_RULE_ERROR Regla de negocio de Odoo violada 422 JOURNAL_MISMATCH Diario no configurado para el tipo de pago 429 RATE_LIMIT Demasiadas peticiones 500 ODOO_ERROR Error interno de Odoo 502 UPSTREAM_UNAVAILABLE Odoo no disponible 504 UPSTREAM_TIMEOUT Timeout esperando respuesta de Odoo 5. Idempotencia y Mapeo Toda entidad del sistema externo se identifica por su external_ref, que es único, estable e inmutable. El middleware mantiene una tabla interna de mapeo que resuelve external_ref → odoo_id. Tabla de mapeo (external_mapping) Columna Tipo Descripción id SERIAL PK Identificador interno entity_type VARCHAR(50) 'contact', 'product', 'bom', 'payment' external_ref VARCHAR(255) ID único del sistema externo odoo_id INTEGER ID correspondiente en Odoo odoo_model VARCHAR(100) 'res.partner', 'product.template', etc. created_at TIMESTAMPTZ Fecha de creación del mapeo updated_at TIMESTAMPTZ Fecha de última actualización Comportamiento del upsert Escenario Acción del Middleware external_ref no existe en mapping CREATE en Odoo, guardar mapping nuevo external_ref existe en mapping WRITE (actualizar) en Odoo usando el ID mapeado Misma request repetida Idempotente: mismo resultado, sin duplicados Unicidad CONSTRAINT UNIQUE(entity_type, external_ref) 6. Mapeo de Campos Odoo ↔ API Contactos (res.partner) API Field Odoo Field Notas external_ref — Solo en mapping name name is_company is_company vat vat email email phone phone mobile mobile website website street street street2 street2 city city state state_id Resuelto por nombre zip zip country_code country_id Resuelto por código ISO-2 is_customer customer_rank > 0 is_supplier supplier_rank > 0 payment_term property_payment_term_id Resuelto por nombre contacts child_ids Contactos hijo (res.partner tipo contact) tags category_id Resuelto por nombre Productos (product.template) API Field Odoo Field Notas name name default_code default_code barcode barcode type detailed_type Mapeo: product→product, consu→consu, service→service list_price list_price standard_price standard_price currency_id currency_id uom_id uom_id uom_po_id uom_po_id description description_sale description_purchase description_purchase sale_ok sale_ok purchase_ok purchase_ok active active categ_id categ_id Busca o crea por nombre taxes_id taxes_id Busca por nombre supplier_taxes_id supplier_taxes_id Busca por nombre weight weight volume volume Lista de Materiales (mrp.bom) API Field Odoo Field Notas code code product_uom_id product_uom_id type type \"normal\", \"phantom\", \"subcontracting\" active active Pagos (account.payment) API Field Odoo Field Notas payment_type payment_type \"inbound\" o \"outbound\" partner_type partner_type \"customer\" o \"supplier\" partner_external_ref partner_id Resuelto vía mapping amount amount currency_id currency_id payment_date date journal_external_ref journal_id Mapeado en middleware payment_method payment_method_line_id Mapeado por código memo ref matched_invoices — Conciliación vía account.move.line 7. Ejemplos de Integración (curl) Flujo completo 1. Autenticación TOKEN=$(curl -s -X POST https://api-integracion.mi-empresa.com/v1/auth/token \\ -H \"Content-Type: application/json\" \\ -d '{\"api_key\":\"a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx\"}' | jq -r '.access_token') AUTH=\"Authorization: Bearer $TOKEN\" 2. Crear Contacto curl -s -X POST https://api-integracion.mi-empresa.com/v1/contacts \\ -H \"Content-Type: application/json\" \\ -H \"$AUTH\" \\ -d '{ \"external_ref\": \"EXT-CUST-001\", \"name\": \"Acme Corporation\", \"is_company\": true, \"email\": \"info@acme.com\", \"is_customer\": true, \"country_code\": \"US\" }' 3. Crear Producto curl -s -X POST https://api-integracion.mi-empresa.com/v1/products \\ -H \"Content-Type: application/json\" \\ -H \"$AUTH\" \\ -d '{ \"external_ref\": \"EXT-PROD-001\", \"name\": \"Laptop Pro 15\\\"\", \"type\": \"product\", \"list_price\": 1299.99 }' 4. Crear Producto con variantes curl -s -X POST https://api-integracion.mi-empresa.com/v1/products \\ -H \"Content-Type: application/json\" \\ -H \"$AUTH\" \\ -d '{ \"external_ref\": \"EXT-PROD-002\", \"name\": \"Camiseta Algodón Premium\", \"type\": \"product\", \"list_price\": 29.99, \"attributes\": [ {\"name\": \"Talle\", \"values\": [\"S\", \"M\", \"L\", \"XL\"]}, {\"name\": \"Color\", \"values\": [\"Negro\", \"Blanco\", \"Azul\"]} ] }' 5. Crear BoM curl -s -X POST https://api-integracion.mi-empresa.com/v1/boms \\ -H \"Content-Type: application/json\" \\ -H \"$AUTH\" \\ -d '{ \"external_ref\": \"EXT-BOM-001\", \"product_external_ref\": \"EXT-PROD-001\", \"product_qty\": 1.0, \"lines\": [ {\"product_external_ref\": \"EXT-PROD-002\", \"product_qty\": 1.0}, {\"product_external_ref\": \"EXT-PROD-003\", \"product_qty\": 2.0} ] }' 6. Registrar Pago curl -s -X POST https://api-integracion.mi-empresa.com/v1/payments \\ -H \"Content-Type: application/json\" \\ -H \"$AUTH\" \\ -d '{ \"external_ref\": \"EXT-PAY-001\", \"payment_type\": \"inbound\", \"partner_type\": \"customer\", \"partner_external_ref\": \"EXT-CUST-001\", \"amount\": 2599.98, \"currency_id\": 2, \"payment_date\": \"2026-07-02\", \"journal_external_ref\": \"BANK-US-01\", \"matched_invoices\": [ {\"invoice_external_ref\": \"INV-001\", \"amount\": 1299.99}, {\"invoice_external_ref\": \"INV-002\", \"amount\": 1299.99} ] }' 8. Contrato de Notificaciones Salientes Como parte del módulo integrador_odoo2delta , Odoo 17 notifica al sistema externo (DeltaV) cuando se crean o confirman documentos de venta y compra. Esta sección define el contrato que el sistema externo debe implementar para recibir dichas notificaciones. 8.1 Endpoints que el Sistema Externo debe exponer Método Endpoint Evento Odoo Descripción POST /notificaciones/ventas sale.order → create / action_confirm Notificación de nueva venta o confirmación POST /notificaciones/compras purchase.order → create / button_confirm Notificación de nueva orden de compra o confirmación Autenticación: Bearer Token (JWT) en header Authorization . Comportamiento esperado del sistema externo: Responder 2xx (200/201) para confirmar recepción exitosa Responder 4xx para errores de negocio (no se reintenta) Timeout máximo: 15 segundos Si no responde en 15s o devuelve 5xx , Odoo reintenta hasta 4 veces con backoff exponencial (1s, 2s, 4s, 8s) 8.2 Payload de Notificación — Venta POST /notificaciones/ventas desde Odoo → Sistema Externo { \"tipo\": \"venta\", \"evento\": \"confirmacion\", \"id_odoo\": 42, \"numero\": \"S00042\", \"fecha_creacion\": \"2026-07-15T10:30:00Z\", \"fecha_confirmacion\": \"2026-07-15T10:35:00Z\", \"estado\": \"sale\", \"cliente\": { \"id_odoo\": 15, \"nombre\": \"Acme Corporation\", \"email\": \"info@acme.com\", \"vat\": \"US123456789\" }, \"lineas\": [ { \"producto\": { \"id_odoo\": 30, \"nombre\": \"Laptop Pro 15\\\"\", \"sku\": \"LP15-2026\", \"cantidad\": 2.0, \"precio_unitario\": 1299.99, \"subtotal\": 2599.98 } } ], \"total_neto\": 2599.98, \"total_impuestos\": 389.99, \"total\": 2989.97, \"moneda\": {\"id\": 2, \"codigo\": \"USD\"}, \"notas\": \"Entrega urgente — prioridad alta\" } Campos del payload de venta: Campo Tipo Descripción tipo string Siempre \"venta\" evento string \"creacion\" o \"confirmacion\" según el hook disparado id_odoo integer ID del sale.order en Odoo numero string Número de orden de venta (secuencia) fecha_creacion string (ISO 8601) Fecha de creación de la orden fecha_confirmacion string (ISO 8601) Fecha de confirmación (null si solo se creó) estado string Estado del sale.order : \"draft\" , \"sent\" , \"sale\" , \"done\" , \"cancel\" cliente object Datos del cliente ( res.partner ) cliente.id_odoo integer ID en Odoo cliente.nombre string Razón social cliente.email string Email principal cliente.vat string Nº de identificación fiscal lineas array Líneas de la orden ( sale.order.line ) lineas[].producto object Producto de la línea lineas[].producto.id_odoo integer ID del producto en Odoo lineas[].producto.nombre string Nombre del producto lineas[].producto.sku string SKU / referencia interna lineas[].cantidad number Cantidad pedida lineas[].precio_unitario number Precio unitario lineas[].subtotal number Cantidad × precio unitario total_neto number Suma de subtotales sin impuestos total_impuestos number Suma de impuestos total number Total de la orden (neto + impuestos) moneda object Moneda de la orden moneda.id integer ID de moneda en Odoo moneda.codigo string Código ISO 4217: \"USD\" , \"EUR\" , \"ARS\" notas string Notas internas de la orden 8.3 Payload de Notificación — Compra POST /notificaciones/compras desde Odoo → Sistema Externo { \"tipo\": \"compra\", \"evento\": \"confirmacion\", \"id_odoo\": 15, \"numero\": \"P00015\", \"fecha_creacion\": \"2026-07-15T09:00:00Z\", \"fecha_confirmacion\": \"2026-07-15T09:05:00Z\", \"fecha_prevista\": \"2026-07-30\", \"estado\": \"purchase\", \"proveedor\": { \"id_odoo\": 28, \"nombre\": \"TechDistributors Inc\", \"email\": \"orders@techdist.com\", \"vat\": \"US987654321\" }, \"lineas\": [ { \"producto\": { \"id_odoo\": 30, \"nombre\": \"Laptop Pro 15\\\"\", \"sku\": \"LP15-2026\" }, \"cantidad\": 10.0, \"precio_unitario\": 850.00, \"subtotal\": 8500.00 } ], \"total_neto\": 8500.00, \"total_impuestos\": 1275.00, \"total\": 9775.00, \"moneda\": {\"id\": 2, \"codigo\": \"USD\"}, \"notas\": \"Pedido trimestral Q3 2026\" } Campos adicionales del payload de compra: Campo Tipo Descripción tipo string Siempre \"compra\" evento string \"creacion\" o \"confirmacion\" id_odoo integer ID del purchase.order en Odoo numero string Número de orden de compra fecha_prevista string (date) Fecha prevista de recepción YYYY-MM-DD proveedor object Datos del proveedor ( res.partner ) estado string Estado: \"draft\" , \"sent\" , \"to approve\" , \"purchase\" , \"done\" , \"cancel\" 8.4 Configuración del Módulo El módulo integrador_odoo2delta expone las siguientes opciones de configuración en Settings → Integraciones → DeltaV : Parámetro Descripción Default URL API DeltaV URL base de la API del sistema externo para notificaciones (vacío — requerido) API Key Token de autenticación para las llamadas salientes (vacío — requerido) Timeout HTTP Timeout máximo para cada intento de notificación 15 segundos Máx. reintentos Número máximo de reintentos ante errores de red/5xx 4 Backoff inicial Espera inicial entre reintentos (se duplica cada vez) 1 segundo Notificar al crear Enviar notificación en evento create además de confirm false Log nivel Nivel de logging para notificaciones INFO 8.5 Errores y reintentos Escenario Comportamiento Sistema externo responde 2xx ✅ Notificación exitosa. Se registra en log. Sistema externo responde 4xx ❌ Error de negocio. No se reintenta. Se registra en log + mensaje en chatter del documento. Sistema externo responde 5xx 🔄 Reintento con backoff exponencial (1s, 2s, 4s, 8s). Máximo 4 intentos. Timeout (> 15s) 🔄 Igual que 5xx . Error de red (DNS, conexión) 🔄 Igual que 5xx . Se agotan los 4 reintentos 🚨 Se registra error crítico en log + se notifica al administrador vía chatter. Nota: Las notificaciones son fire-and-forget desde la perspectiva del usuario de Odoo. La confirmación de la orden no se bloquea si la notificación falla — los reintentos ocurren en segundo plano. Fuente original Gist: hito_deltav_integra.md"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Catálogo completo de errores",
+    "url": "/integraciones/deltav/api-rest/#cat-logo-completo-de-errores"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Comportamiento del upsert",
+    "url": "/integraciones/deltav/api-rest/#comportamiento-del-upsert"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Consultar BoM",
+    "url": "/integraciones/deltav/api-rest/#consultar-bom"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Consultar Contacto",
+    "url": "/integraciones/deltav/api-rest/#consultar-contacto"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Consultar Pago",
+    "url": "/integraciones/deltav/api-rest/#consultar-pago"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Consultar Producto",
+    "url": "/integraciones/deltav/api-rest/#consultar-producto"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Contactos (res.partner)",
+    "url": "/integraciones/deltav/api-rest/#contactos-res-partner"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Crear o Actualizar",
+    "url": "/integraciones/deltav/api-rest/#crear-o-actualizar"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Flujo completo",
+    "url": "/integraciones/deltav/api-rest/#flujo-completo"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Fuente original",
+    "url": "/integraciones/deltav/api-rest/#fuente-original"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Lista de Materiales (mrp.bom)",
+    "url": "/integraciones/deltav/api-rest/#lista-de-materiales-mrp-bom"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Pagos (account.payment)",
+    "url": "/integraciones/deltav/api-rest/#pagos-account-payment"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Productos (product.template)",
+    "url": "/integraciones/deltav/api-rest/#productos-product-template"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Registrar Pago",
+    "url": "/integraciones/deltav/api-rest/#registrar-pago"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Tabla de mapeo (external_mapping)",
+    "url": "/integraciones/deltav/api-rest/#tabla-de-mapeo-external-mapping"
+  },
+  {
+    "page": "API REST de Integración — Deltav → Odoo 17",
+    "topic": "Unicidad",
+    "url": "/integraciones/deltav/api-rest/#unicidad"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "1. Autenticación — Obtención de JWT",
+    "url": "/integraciones/deltav/diagrama-secuencia/#1-autenticaci-n-obtenci-n-de-jwt"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "2. Contactos — Crear, Actualizar, Consultar",
+    "url": "/integraciones/deltav/diagrama-secuencia/#2-contactos-crear-actualizar-consultar"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "3. Productos — Template + Variantes",
+    "url": "/integraciones/deltav/diagrama-secuencia/#3-productos-template-variantes"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "4. Lista de Materiales — BoM con dependencias",
+    "url": "/integraciones/deltav/diagrama-secuencia/#4-lista-de-materiales-bom-con-dependencias"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "5. Pagos — Cobro + Conciliación",
+    "url": "/integraciones/deltav/diagrama-secuencia/#5-pagos-cobro-conciliaci-n"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "6. Orden de carga obligatorio",
+    "url": "/integraciones/deltav/diagrama-secuencia/#6-orden-de-carga-obligatorio"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "7. Notificaciones Salientes — integrador_odoo2delta",
+    "url": "/integraciones/deltav/diagrama-secuencia/#7-notificaciones-salientes-integrador-odoo2delta"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "8. Diagrama de Capas del Sistema",
+    "url": "/integraciones/deltav/diagrama-secuencia/#8-diagrama-de-capas-del-sistema"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Arquitectura — Integración Deltav → Odoo 17",
+    "url": "/integraciones/deltav/diagrama-secuencia/",
+    "text": "Arquitectura — Integración Deltav → Odoo 17 Diagramas de secuencia en PlantUML del flujo completo: autenticación, contactos, productos, BoMs y pagos. Visión general del sistema Please use CSS style instead of skinparam ParticipantPadding Sistema Externo Middleware Odoo 17 Mapping DB Sistema Externo (Deltav) Sistema Externo (Deltav) Middleware (REST -> JSON-RPC) Middleware (REST -> JSON-RPC) Odoo 17 Odoo 17 Mapping DB Mapping DB Autenticacion POST /v1/auth/token {api_key} POST /web/session/authenticate uid + session 200 {access_token JWT} Contactos POST /v1/contacts {name,vat,email,...} SELECT odoo_id WHERE ext_ref=? alt [Registro nuevo] not found execute_kw(create) res.partner partner_id: 42 INSERT mapping (ext_ref,42,partner) [Registro existente] found -> odoo_id=42 execute_kw(write) [42] updated 201/200 {status,odoo_id,name} Productos POST /v1/products {name,price,attributes} lookup product + resolve variant attrs create product.template + product.product variants tmpl_id: 15 + variants: [30,31,32] INSERT mappings (template + variants) 201 {odoo_id:15, variants:[...]} Lista de Materiales POST /v1/boms {product, lines:[{comp,qty}]} resolver product_ext_ref + components create mrp.bom + bom_line_ids bom_id: 8 INSERT mapping (ext_ref,8,bom) 201 {odoo_id:8, lines_count:3} Pagos POST /v1/payments {type,partner,amount,invoices} resolver partner + journal + facturas create account.payment + action_post() payment_id:156, state:\"posted\" INSERT mapping 201 {odoo_id:156, state:\"posted\"} 1. Autenticación — Obtención de JWT Sistema Externo Middleware Odoo 17 Sistema Externo Sistema Externo Middleware Middleware Odoo 17 Odoo 17 POST /v1/auth/token {\"api_key\": \"***\"} POST /web/session/authenticate validar API Key uid: 7 + session cookie generar JWT expires_in: 3600 segundos 200 OK {\"access_token\": \"***\", \"token_type\": \"bearer\"} Authorization: Bearer {token} en todas las llamadas subsiguientes 2. Contactos — Crear, Actualizar, Consultar Sistema Externo Middleware Mapping DB Odoo 17 Sistema Externo Sistema Externo Middleware Middleware Mapping DB Mapping DB Odoo 17 Odoo 17 POST /v1/contacts {\"external_ref\":\"EXT-001\", \"name\":\"Acme\", \"is_company\":true} SELECT odoo_id FROM mapping WHERE ext_ref='EXT-001' alt [Nuevo - Crear] not found execute_kw(res.partner, create) {name, is_company, vat, email, ...} partner_id: 42 INSERT mapping (EXT-001, 42, partner) 201 Created {\"status\":\"created\", \"odoo_id\":42} [Existente - Actualizar] found - odoo_id=42 execute_kw(res.partner, write) [[42], {name, email, ...}] True 200 OK {\"status\":\"updated\", \"odoo_id\":42} Consulta GET GET /v1/contacts/EXT-001 lookup ext_ref - 42 execute_kw(res.partner, read) [[42], {fields:[name,email,country_id,...]}] {id:42, name:\"Acme\", email:\"...\", country_id:[233,\"US\"]} resolver country_id - \"United States\" 200 OK {\"name\":\"Acme\",\"country\":\"United States\"} 3. Productos — Template + Variantes Sistema Externo Middleware Mapping DB Odoo 17 Sistema Externo Sistema Externo Middleware Middleware Mapping DB Mapping DB Odoo 17 Odoo 17 POST /v1/products {\"ext_ref\":\"PROD-001\", \"name\":\"Laptop Pro\", \"list_price\":1299.99, \"attributes\":[{...}]} lookup ext_ref - existe? alt [Nuevo producto con variantes] not found create product.template {name, detailed_type:\"product\", list_price, ...} tmpl_id: 15 write attribute_line_ids precio extra + valores - genera variantes variants created: [30,31,32,33] Mapear template + cada variante PROD-001 -> 15 (template) PROD-001-30 -> 30 (variant) PROD-001-31 -> 31 (variant) PROD-001-32 -> 32 (variant) PROD-001-33 -> 33 (variant) INSERT mappings 201 Created {\"odoo_id\":15, \"variants\":[{...}]} [Actualizacion] found - tmpl_id=15 write([15], {list_price, active, ...}) True 200 Updated 4. Lista de Materiales — BoM con dependencias Sistema Externo Middleware Mapping DB Odoo 17 Sistema Externo Sistema Externo Middleware Middleware Mapping DB Mapping DB Odoo 17 Odoo 17 POST /v1/boms {\"ext_ref\":\"BOM-001\", \"product_ext_ref\":\"PROD-001\", \"lines\":[{\"comp_ext_ref\":\"COMP-001\", \"qty\":2}, ...]} resolver product_ext_ref - tmpl_id resolver cada component_ext_ref - product_id alt [Dependencias OK] tmpl_id:15 components: [30,31] create mrp.bom product_tmpl_id: 15 bom_line_ids: (0,0,{product_id:30, qty:2}) (0,0,{product_id:31, qty:1}) bom_id: 8 INSERT mapping (BOM-001, 8, bom) 201 Created {\"odoo_id\":8, \"lines_count\":2} [Dependencia no encontrada] component EXT-999 - not found 400 Bad Request {\"error\":\"DEPENDENCY_NOT_FOUND\", \"details\":{\"ext_ref\":\"EXT-999\"}} 5. Pagos — Cobro + Conciliación Sistema Externo Middleware Mapping DB Odoo 17 Sistema Externo Sistema Externo Middleware Middleware Mapping DB Mapping DB Odoo 17 Odoo 17 POST /v1/payments {\"ext_ref\":\"PAY-001\", \"payment_type\":\"inbound\", \"partner_ext_ref\":\"EXT-001\", \"amount\":2599.98, \"matched_invoices\":[\"INV-001\",\"INV-002\"]} resolver partner_ext_ref - partner_id: 42 resolver journal_ext_ref - journal_id resolver matched_invoices - [89,90] create account.payment {payment_type:\"inbound\", partner_id:42, amount:2599.98} payment_id: 156 action_post([156]) conciliar facturas 89 y 90 alt [Conciliacion exitosa] state:\"posted\" reconciled with invoices [89,90] INSERT mapping (PAY-001, 156, payment) 201 Created {\"odoo_id\":156, \"state\":\"posted\"} [Error de regla de negocio] Error: factura INV-001 ya pagada 409 Conflict {\"error\":\"BUSINESS_RULE_ERROR\", \"message\":\"factura INV-001 completamente pagada\"} 6. Orden de carga obligatorio 1. Contactos res.partner 2. Productos product.template + product.product 3. Listas de Materiales mrp.bom + bom.line 4. Pagos account.payment + conciliacion suppliers necesitan existir producto y componentes partner, journal y facturas # Entidad Depende de Motivo 1 Contactos — Sin dependencias 2 Productos Contactos Suppliers, taxes 3 BoMs Productos Producto + componentes deben existir 4 Pagos Contactos + Facturas Partner, journal e invoices Tabla de Mapeo — Mapping DB ┌─────────────┬──────────┬──────────────┬──────────────────────┐ │ ext_ref │ odoo_id │ model │ updated_at │ ├─────────────┼──────────┼──────────────┼──────────────────────┤ │ EXT-001 │ 42 │ res.partner │ 2026-07-02T17:00:00Z │ │ PROD-001 │ 15 │ product.tpl │ 2026-07-02T17:01:00Z │ │ PROD-001-30 │ 30 │ product.prod │ 2026-07-02T17:01:00Z │ │ PROD-001-31 │ 31 │ product.prod │ 2026-07-02T17:01:00Z │ │ BOM-001 │ 8 │ mrp.bom │ 2026-07-02T17:02:00Z │ │ PAY-001 │ 156 │ acct.payment │ 2026-07-02T17:03:00Z │ └─────────────┴──────────┴──────────────┴──────────────────────┘ Unicidad: (model, ext_ref) — cada external_ref es único por tipo de entidad. Propiedades del Middleware Propiedad Descripción Idempotencia POST con mismo external_ref = upsert (crea o actualiza) Resolución de IDs Cada request consulta Mapping DB: ext_ref → odoo_id Merge parcial Solo los campos enviados se modifican en Odoo Idempotency-Key Header opcional para prevenir duplicados en reintentos Rate Limit 100 req/min por API Key — 429 Too Many Requests Timeout REST: 30s — JSON-RPC: 60s — 504 Gateway Timeout 7. Notificaciones Salientes — integrador_odoo2delta Flujo de notificación de venta Usuario Odoo sale.order integrador_odoo2delta Odoo DB API DeltaV Usuario Odoo Usuario Odoo sale.order sale.order integrador_odoo2delta integrador_odoo2delta Odoo DB Odoo DB API DeltaV (Sistema Externo) API DeltaV (Sistema Externo) Confirmación de venta action_confirm() state = 'sale' hook: _notificar_venta() leer sale.order (campos relevantes) datos de la orden construir payload JSON POST {deltaV_url}/notificaciones/ventas Authorization: Bearer {token} Content-Type: application/json   {\"tipo\": \"venta\", \"id_odoo\": 42, \"numero\": \"S00042\", \"cliente\": {...}, \"lineas\": [...], \"total\": 2599.98, \"fecha_confirmacion\": \"...\"} alt [Éxito (2xx)] 200 OK registrar notificación exitosa ok [Error de red / timeout] error / timeout reintentar con backoff (1s, 2s, 4s, 8s) Máx 4 reintentos Luego → log + alerta [Error de negocio (4xx)] 400/409/422 registrar error sin reintentar Flujo de notificación de compra Usuario Odoo purchase.order integrador_odoo2delta Odoo DB API DeltaV Usuario Odoo Usuario Odoo purchase.order purchase.order integrador_odoo2delta integrador_odoo2delta Odoo DB Odoo DB API DeltaV (Sistema Externo) API DeltaV (Sistema Externo) Confirmación de compra button_confirm() state = 'purchase' hook: _notificar_compra() leer purchase.order (campos relevantes) datos de la OC construir payload JSON POST {deltaV_url}/notificaciones/compras Authorization: Bearer {token} Content-Type: application/json   {\"tipo\": \"compra\", \"id_odoo\": 15, \"numero\": \"P00015\", \"proveedor\": {...}, \"lineas\": [...], \"total\": 8500.00, \"fecha_confirmacion\": \"...\"} alt [Éxito (2xx)] 200 OK registrar notificación exitosa ok [Error de red / timeout] error / timeout reintentar con backoff (1s, 2s, 4s, 8s) Máx 4 reintentos Luego → log + alerta [Error de negocio (4xx)] 400/409/422 registrar error sin reintentar 8. Diagrama de Capas del Sistema Diagrama de Componentes — Integración Deltav ↔ Odoo 17 Sistema Externo (DeltaV) Middleware Odoo 17 deltav_connector integrador_odoo2delta Modelos Nativos Cliente REST API de Notificaciones /notificaciones/ventas /notificaciones/compras FastAPI REST Endpoints Mapping DB (PostgreSQL) Rate Limiter Circuit Breaker Modelos deltav.* Vistas + Menú Controladores HTTP Sync Engine Hook sale.order Hook purchase.order HTTP Client + Reintentos Configuración Settings sale.order purchase.order res.partner product.* mrp.bom account.* REST/JSON (JWT auth) lookup ext_ref → odoo_id JSON-RPC JSON-RPC sync create / action_confirm create / button_confirm POST POST HTTP POST (JWT auth) URL, timeout, retry config 📄 Fuente: Especificación original de la API (Gist)"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Flujo de notificación de compra",
+    "url": "/integraciones/deltav/diagrama-secuencia/#flujo-de-notificaci-n-de-compra"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Flujo de notificación de venta",
+    "url": "/integraciones/deltav/diagrama-secuencia/#flujo-de-notificaci-n-de-venta"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Propiedades del Middleware",
+    "url": "/integraciones/deltav/diagrama-secuencia/#propiedades-del-middleware"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Tabla de Mapeo — Mapping DB",
+    "url": "/integraciones/deltav/diagrama-secuencia/#tabla-de-mapeo-mapping-db"
+  },
+  {
+    "page": "Arquitectura — Integración Deltav → Odoo 17",
+    "topic": "Visión general del sistema",
+    "url": "/integraciones/deltav/diagrama-secuencia/#visi-n-general-del-sistema"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Arquitectura — Integración Odoo Producción",
+    "url": "/integraciones/produccion/arquitectura/",
+    "text": "Arquitectura — Integración Odoo Producción Diagramas de secuencia y arquitectura del sistema de integración con Odoo para los casos A (demanda por venta) y B (producción directa). Visión general del sistema Sistema Externo API de Integración Odoo Sales MRP Stock Maestros Planificador / MES Sistema Comercial Autenticación Validación + Idempotencia Resolución de Maestros Servicio de Aplicación sale.order mrp.production mrp.workorder mrp.bom stock.move Reservas product.product res.partner POST /case-a/sales-orders POST /case-b/manufacturing-orders POST /master-data/* Crear + confirmar venta Crear + confirmar + planificar Upsert productos + BOMs Upsert clientes Reabastecimiento MRP Work orders Consumo / producción Caso A — Demanda por venta Sistema Externo API Integraci.n Odoo Sales Odoo MRP Odoo Stock Sistema Externo Sistema Externo API Integración API Integración Odoo Sales Odoo Sales Odoo MRP Odoo MRP Odoo Stock Odoo Stock POST /api/v1/case-a/sales-orders {external_order_id, customer, lines} validar idempotencia validar maestros requeridos (productos, cliente, almacén) crear sale.order + sale.order.line confirmar orden de venta disparar reabastecimiento procurar demanda de fabricación generar mrp.production según reglas de abastecimiento intentar reserva de componentes 201 Accepted {odoo_id, estado: \"triggered\"} Caso B — Producción directa Sistema Externo API Integraci.n Odoo MRP Odoo Work Orders Odoo Stock API Consulta Sistema Externo (Planificador) Sistema Externo (Planificador) API Integración API Integración Odoo MRP Odoo MRP Odoo Work Orders Odoo Work Orders Odoo Stock Odoo Stock API Consulta API Consulta POST /api/v1/case-b/manufacturing-orders {external_mo_id, product, bom, quantity} validar idempotencia validar maestros requeridos (producto, BOM, almacén) crear mrp.production confirmar orden de fabricación planificar operaciones (generar work orders) intentar reserva de componentes 201 Accepted {odoo_id, state: \"confirmed\"} Flujo posterior GET /api/v1/status/production-orders/{id} consultar estado mrp.production consultar progreso work orders consultar reservas + movimientos 200 OK {state, produced_qty, reserved_components} Capas del sistema API Pública Endpoints REST Autenticación Bearer Validación + Idempotencia Observabilidad Servicio de Aplicación Orquestación Caso A Orquestación Caso B Sincronización de maestros Adaptador Odoo Mapeo de contratos Resolución external_id JSON-RPC Odoo Ventas, MRP, Stock Maestros Sistema destino Tabla de capas Capa Responsabilidad Observación API pública Endpoints, autenticación, validación, idempotencia, respuestas Interfaz recomendada para terceros Servicio de aplicación Orquestación del caso A, caso B y sincronización de maestros No expone detalles internos de Odoo Adaptador Odoo Mapeo de contratos a modelos y métodos del ERP Puede usar JSON-RPC o RPC legacy Odoo Ejecución funcional de ventas, MRP, stock y maestros Sistema destino Flujo de sincronización de maestros Sistema Externo API Integraci.n Adaptador Odoo Odoo Sistema Externo Sistema Externo API Integración API Integración Adaptador Odoo Adaptador Odoo Odoo Odoo Maestros primarios POST /master-data/products/upsert {external_id, sku, name, type, uom} resolver/crear product.template + product.product upsert producto odoo_id mapeado ok 200 {status: \"upserted\"} POST /master-data/boms/upsert {external_id, product, components[]} resolver/crear mrp.bom + mrp.bom.line upsert BOM + líneas bom_id mapeado ok 200 {status: \"upserted\"} Los maestros primarios DEBEN existir antes de enviar demanda o producción. Si faltan, la API responde 404 MASTER_NOT_FOUND. 📄 Fuente: Informe de Integración Odoo Producción v14"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Capas del sistema",
+    "url": "/integraciones/produccion/arquitectura/#capas-del-sistema"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Caso A — Demanda por venta",
+    "url": "/integraciones/produccion/arquitectura/#caso-a-demanda-por-venta"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Caso B — Producción directa",
+    "url": "/integraciones/produccion/arquitectura/#caso-b-producci-n-directa"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Flujo de sincronización de maestros",
+    "url": "/integraciones/produccion/arquitectura/#flujo-de-sincronizaci-n-de-maestros"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Tabla de capas",
+    "url": "/integraciones/produccion/arquitectura/#tabla-de-capas"
+  },
+  {
+    "page": "Arquitectura — Integración Odoo Producción",
+    "topic": "Visión general del sistema",
+    "url": "/integraciones/produccion/arquitectura/#visi-n-general-del-sistema"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "1. Propósito y alcance",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#1-proposito-y-alcance"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "2. Marco de evaluación de factibilidad",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#2-marco-de-evaluacion-de-factibilidad"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "2.1 Criterios de factibilidad",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#2-1-criterios-de-factibilidad"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "3. Entendimiento de la propuesta del cliente",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#3-entendimiento-de-la-propuesta-del-cliente"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "4. Evaluación de factibilidad",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#4-evaluacion-de-factibilidad"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "4.1 Consideración específica: filestore de Odoo",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#4-1-consideracion-especifica-filestore-de-odoo"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "4.2 Incidencia en la factibilidad",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#4-2-incidencia-en-la-factibilidad"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "Caso OneCloud",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/",
+    "text": "Caso OneCloud Informe de factibilidad de una propuesta de continuidad y recuperación de Odoo ERP ante una contingencia catastrófica. Alta disponibilidad Agosto de 2026 Informe de factibilidad ISO/IEC/IEEE 29148:2018 Informe de factibilidad de la propuesta Proveedor: HitoFusion | www.hitofusion.com Objetivo: continuidad y recuperación de Odoo ERP ante una contingencia catastrófica. Descargar el informe original en PDF 1. Propósito y alcance El presente informe, elaborado por HitoFusion, tiene por objeto evaluar la factibilidad de la propuesta de continuidad operativa para Odoo ERP frente a una contingencia grave o a la pérdida total del Sitio A. La evaluación busca confirmar que el enfoque planteado resulta técnicamente coherente para restablecer la operación desde un Sitio B, considerando la infraestructura virtual, la base PostgreSQL y la información documental asociada. El análisis se basa en la propuesta entregada por el cliente y en la reunión de relevamiento. Se considera especialmente el filestore de Odoo, ya que contiene documentos y adjuntos físicos que no forman parte de PostgreSQL y que deben mantenerse disponibles de manera coordinada con la recuperación de la base de datos. Resultado preliminar La propuesta es factible como base de un esquema de recuperación ante una catástrofe. La factibilidad integral depende de que el alcance contemple en forma coordinada la máquina virtual, PostgreSQL y el filestore de Odoo. 2. Marco de evaluación de factibilidad La estructura del informe se alinea con los principios de ISO/IEC/IEEE 29148:2018 para ingeniería de requisitos. En particular, explicita propósito, alcance, necesidad, solución propuesta, interfaces relevantes, restricciones, supuestos y criterios de validación. Esta referencia se utiliza como guía de calidad y trazabilidad documental; el presente informe no constituye una certificación formal de conformidad con el estándar. 2.1 Criterios de factibilidad La factibilidad se evalúa mediante la correspondencia entre la necesidad de continuidad del negocio y los componentes de solución identificados, junto con la posibilidad de verificar su comportamiento mediante pruebas integrales. Se consideran los siguientes criterios: Factibilidad técnica: disponibilidad de tecnologías y mecanismos aptos para recuperar infraestructura, base de datos y archivos. Factibilidad operativa: posibilidad de ejecutar el cambio al Sitio B y restablecer el servicio mediante procedimientos previamente definidos por el equipo técnico. Integridad de la información: preservación coordinada de transacciones PostgreSQL, comprobantes fiscales y adjuntos del filestore. Verificabilidad: capacidad de demostrar el resultado mediante pruebas de recuperación con datos y escenarios representativos. 3. Entendimiento de la propuesta del cliente De acuerdo con la documentación y la reunión analizadas, entendemos que la solución propuesta contempla los siguientes componentes y pasos: Replicar periódicamente la máquina virtual productiva de Odoo desde el Sitio A hacia el Sitio B mediante Veeam Backup & Replication, utilizando el enlace entre ambos sitios. Mantener en PostgreSQL la generación continua de registros WAL (Write-Ahead Log), que registran los cambios transaccionales de la base de datos. Utilizar pgBackRest para archivar, comprimir, verificar y transferir los WAL hacia el almacenamiento disponible en el Sitio B. Conservar en el Sitio B una réplica de la infraestructura y los archivos necesarios para recuperar la base mediante Point-in-Time Recovery (PITR). Ante una pérdida del Sitio A, iniciar la réplica de la máquina virtual en el Sitio B, recuperar PostgreSQL aplicando los WAL disponibles y habilitar esa instancia como nuevo servicio operativo. Redirigir el acceso de los usuarios y servicios hacia el Sitio B mediante el mecanismo de DNS o enrutamiento que se defina. Preservar la continuidad del circuito de facturación electrónica con ARCA, procurando recuperar las facturas, secuencias y códigos CAE almacenados en PostgreSQL. Mantener un procedimiento de contingencia funcional para conciliar y reconstruir comprobantes si alguna operación autorizada en ARCA no estuviera disponible en la instancia recuperada. Este entendimiento deberá confirmarse conjuntamente durante el diseño detallado, en particular respecto de la ubicación de Odoo y PostgreSQL, la modalidad definitiva de transporte de WAL, el mecanismo de activación del Sitio B y la administración del tráfico de usuarios. 4. Evaluación de factibilidad La combinación de réplica de infraestructura y recuperación transaccional permite reducir significativamente la pérdida potencial de información respecto de una estrategia basada únicamente en copias periódicas de la máquina virtual. También brinda flexibilidad para recuperar PostgreSQL a un punto consistente utilizando los respaldos y WAL disponibles. Desde la perspectiva técnica, las tecnologías propuestas son compatibles con el objetivo general: Veeam protege la infraestructura virtual, mientras que PostgreSQL WAL y pgBackRest permiten conservar y recuperar la evolución transaccional. Los procedimientos de activación, aislamiento, redirección y retorno ya contemplados por el equipo técnico del cliente deberán integrarse al plan operativo y validarse en conjunto. 4.1 Consideración específica: filestore de Odoo Odoo conserva en PostgreSQL la información estructurada y la referencia de los adjuntos. Sin embargo, muchos archivos físicos se almacenan fuera de la base, dentro del directorio de filestore asociado a cada base de datos. Allí pueden encontrarse PDFs, imágenes, firmas, documentos incorporados al chatter y otros adjuntos operativos. 4.2 Incidencia en la factibilidad La recuperación de PostgreSQL mediante WAL puede llevar la base a un momento más reciente que la última réplica de la máquina virtual. Si durante ese intervalo se generaron o incorporaron adjuntos, la base recuperada podría contener referencias a archivos que todavía no existen en el Sitio B. El sistema podría iniciar y los datos transaccionales estar presentes, pero determinados documentos no podrían abrirse. Por este motivo, el filestore no debe considerarse un detalle interno de la VM. Es un conjunto de información productiva con requisitos propios de protección. Para mantener la factibilidad de la propuesta, debe contar con una política propia de copia y sincronización, comparable a las políticas ya previstas para la VM y PostgreSQL, y coordinada con el punto de recuperación de la base. Dictamen de factibilidad La propuesta es técnicamente factible para brindar un grado aceptable de continuidad operativa ante la pérdida del Sitio A. Su alcance debe incluir expresamente la copia y sincronización del filestore, además de la réplica de la VM y la recuperación de PostgreSQL. La aceptación final deberá demostrarse mediante una prueba integral que verifique transacciones, facturación y adjuntos. Referencias ISO/IEC/IEEE 29148:2018, Systems and software engineering - Life cycle processes - Requirements engineering . Versión confirmada como vigente en 2024. IEEE Standards Association, IEEE/ISO/IEC 29148-2018 . HitoFusion, sitio institucional y servicios Odoo . Fuente primaria de requisitos: reunión “Arquitectura de Alta Disponibilidad y Recuperación en Odoo”. Ver grabación y highlights en Kommodo ."
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "Informe de factibilidad de la propuesta",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#informe-de-factibilidad-de-la-propuesta"
+  },
+  {
+    "page": "Caso OneCloud — Alta disponibilidad",
+    "topic": "Referencias",
+    "url": "/infraestructura/alta-disponibilidad/caso-onecloud/#referencias"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "1. Introducción",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#1-introduccion"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "2. Requerimientos y supuestos",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#2-requerimientos-y-supuestos"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "3. Estimación recomendada",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#3-estimacion-recomendada"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "3.1 CPU y workers",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#3-1-analisis-de-cpu-y-workers"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "3.2 Memoria",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#3-2-analisis-de-memoria"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "3.3 Capacidad y tasa de crecimiento",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#3-3-crecimiento-de-almacenamiento"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "3.4 Variación de concurrencia",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#3-4-variacion-de-concurrencia"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "4. Recomendaciones oficiales de Odoo",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#4-recomendaciones-oficiales-de-odoo"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "4.1 Cómo replicar la consulta en Odoo Help",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#4-1-como-replicar-la-consulta-en-odoo-help"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "5. Validación y criterios de aceptación",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/#5-validacion-y-criterios-de-aceptacion"
+  },
+  {
+    "page": "Dimensionamiento 100 User — Instalación Odoo Local",
+    "topic": "Dimensionamiento 100 User",
+    "url": "/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/",
+    "text": "Dimensionamiento 100 User Estimación técnica para una instancia Odoo Enterprise 19 instalada en una VPS on-premise para 100 usuarios nominales. Infraestructura Odoo Enterprise 19 100 usuarios 20 % de concurrencia base 1. Introducción El propósito de este informe es definir una configuración inicial fundada para operar Odoo Enterprise 19 en infraestructura on-premise con 100 usuarios registrados. El dimensionamiento busca equilibrar rendimiento, margen de crecimiento y capacidad de recuperación, evitando presentar una cifra aislada como garantía de desempeño. La cantidad de usuarios nominales no determina por sí sola la carga. La capacidad real depende de la concurrencia, los módulos utilizados, la complejidad de las personalizaciones, las tareas programadas, las integraciones, los reportes, el volumen transaccional y el tamaño del filestore. Por ese motivo, la recomendación debe validarse con métricas y una prueba de carga antes de aceptar la capacidad productiva. 2. Requerimientos y supuestos Variable Supuesto de diseño Usuarios nominales 100 cuentas habilitadas Concurrencia base 20 %: 20 usuarios simultáneos Concurrencia de crecimiento 30–45 usuarios simultáneos con ajuste de workers y validación Aplicación Odoo Enterprise 19 en Linux, modo multiproceso Base de datos PostgreSQL en la misma VPS Carga Empresarial media; sin procesos masivos permanentes Disponibilidad Instancia única; backups y recuperación fuera de la VPS La guía oficial de Odoo utiliza como orientación aproximadamente un worker por cada seis usuarios concurrentes . Para 20 concurrentes, el cálculo teórico es ceil(20 / 6) = 4 workers HTTP. Se propone comenzar con 6 workers HTTP y 1 worker cron para disponer de margen operativo, manteniendo el worker de eventos/websocket y el proxy correctamente configurados. 3. Estimación recomendada Componente Base recomendada Rango superior Justificación CPU 10 vCPU 12–15 vCPU Margen para workers Odoo, PostgreSQL, cron, integraciones y picos. Deben ser vCPU de buen rendimiento y sin sobreasignación agresiva. RAM 24 GB 32 GB Cubre workers, PostgreSQL, caché Linux, proxy, monitoreo y margen de seguridad. Usar 32 GB con MRP, inventario intensivo, reportes o integraciones frecuentes. Disco 500 GB NVMe 800 GB NVMe Capacidad para PostgreSQL, filestore, WAL, temporales y logs, conservando margen libre. Los backups deben almacenarse fuera del host. Workers iniciales 6 HTTP + 1 cron 8 HTTP + 1–2 cron Ajustar con CPU, latencia p95 y carga real; más workers no corrigen consultas lentas. Red 1 Gbps LAN Enlace redundante según criticidad Importan la latencia estable, el acceso remoto y la ventana de backup. Configuración recomendada de partida 12 vCPU, 32 GB de RAM y 500 GB NVMe, con posibilidad de ampliar a 800 GB. Es una configuración deliberadamente holgada para 20 usuarios concurrentes y permite absorber crecimiento, cron e integraciones sin operar al límite desde el inicio. 3.1 CPU y workers Odoo documenta dos reglas orientativas: (CPU × 2) + 1 como máximo teórico de workers y aproximadamente un worker por cada seis usuarios concurrentes. Con 10 vCPU, el máximo teórico sería 21; con 15 vCPU, 31. No se recomienda configurar todos esos procesos de inicio: PostgreSQL, cron y el sistema también requieren CPU. Para el requisito base, 6 workers HTTP dejan margen sobre los 4 teóricos. 3.2 Memoria La fórmula oficial considera 80 % de solicitudes ligeras con 150 MB por worker y 20 % pesadas con 1 GB. Para 7 workers relevantes, la estimación de Odoo es aproximadamente 7 × (0,8 × 150 + 0,2 × 1024) ≈ 2,27 GB solo para workers. La recomendación de 24–32 GB incorpora PostgreSQL, caché de página, sistema operativo, proxy, monitoreo, procesos de fondo y picos de memoria. 3.3 Capacidad y tasa de crecimiento El disco debe operar con margen. Se adopta un umbral de planificación del 70 % de ocupación, se reservan 40 GB para sistema, logs y temporales, y se supone un volumen inicial combinado de PostgreSQL y filestore de 100 GB. NVMe Techo operativo al 70 % Crecimiento disponible después de 40 GB de sistema y 100 GB iniciales A 5 GB/mes A 10 GB/mes A 20 GB/mes 500 GB 350 GB 210 GB 42 meses 21 meses 10 meses 800 GB 560 GB 420 GB 84 meses 42 meses 21 meses La fórmula reproducible es meses = (capacidad × 0,70 − reserva del sistema − datos iniciales) / crecimiento mensual . Esta tabla mide capacidad, no rendimiento de escritura. Si el volumen inicial o la tasa real cambian, debe recalcularse. Alertar al 60 %, planificar ampliación al 65 % y evitar superar sostenidamente el 70 %. 3.4 Variación de concurrencia Concurrentes Workers HTTP teóricos Comportamiento esperado con 10–15 vCPU / 24–32 GB 20 (20 %) 4 Holgado con 6 workers; escenario base. 30 (30 %) 5 Compatible con 6–7 workers y monitoreo. 45 (45 %) 8 Compatible con 8 workers en el tramo de 12–15 vCPU y 32 GB, sujeto a prueba de carga. 60 (60 %) 10 Posible solo con carga moderada, 15 vCPU, 32 GB y PostgreSQL bien ajustado; requiere prueba. 100 (100 %) 17 Fuera del supuesto base. Requiere redimensionamiento, prueba integral y posible separación de PostgreSQL. Estas bandas no son garantías: una operación MRP, un reporte contable o una integración pesada puede consumir más que varias sesiones livianas. La aceptación debe basarse en CPU sostenida, memoria, latencia de disco, consultas PostgreSQL y tiempos de respuesta p95. 4. Recomendaciones oficiales de Odoo La documentación oficial de Odoo 19 respalda los criterios usados en este informe: System configuration : workers, concurrencia, memoria, proxy, websocket y ejemplo de configuración. Source install : Python 3.10 o posterior y PostgreSQL 13 o posterior para Odoo 19. Packaged installers : paquetes oficiales y requisito manual de wkhtmltopdf 0.12.6 para encabezados y pies de página. On-premise : índice oficial de despliegue local. Command-line interface : parámetros de ejecución y configuración del servidor. Las páginas de precios, hardware de POS, IoT, industrias, partners y SLA comercial pueden aportar contexto, pero no fundamentan el dimensionamiento de CPU, RAM, workers o almacenamiento de una VPS on-premise. Por eso no se utilizan como evidencia principal. 4.1 Cómo replicar la consulta en Odoo Help Abrir Odoo Help e iniciar sesión si el portal lo solicita. Crear una consulta nueva y especificar versión, edición, modalidad, usuarios nominales, concurrencia, ubicación de PostgreSQL y tipo de carga. Usar este texto: Dimensionar Odoo Enterprise 19 on-premise para 100 usuarios nominales, 20 usuarios concurrentes, PostgreSQL en la misma VPS, carga empresarial media. Indicar CPU, RAM, disco, workers, supuestos y citar únicamente documentación oficial de Odoo 19. Pedir que separe requisitos mínimos, recomendaciones y supuestos; solicitar enlaces directos a cada fuente. Abrir los enlaces citados y comprobar manualmente workers, fórmula de memoria, versiones mínimas y configuración del proxy. Guardar fecha, texto de la consulta y respuesta. La salida del asistente debe tratarse como orientación; la documentación enlazada y la prueba de carga son la evidencia de aceptación. 5. Validación y criterios de aceptación Medir concurrencia real por franja horaria y proceso. Relevar módulos, personalizaciones, cron, integraciones y reportes críticos. Medir PostgreSQL, filestore, WAL, logs y crecimiento mensual. Ejecutar prueba de carga en homologación con datos representativos. Monitorear CPU, RAM, latencia e IOPS de disco, bloqueos y consultas lentas. Definir backups externos, RPO, RTO y prueba de restauración. Revisar la capacidad después de 30, 60 y 90 días de operación. Dictamen Para 100 usuarios nominales y 20 % de concurrencia, la configuración de 10–15 vCPU, 24–32 GB de RAM y 500–800 GB NVMe es técnicamente prudente y ofrece margen de crecimiento. Se recomienda implementar 12 vCPU, 32 GB y 500 GB NVMe como punto inicial, conservando ampliación a 800 GB y cerrando la capacidad mediante una prueba de carga."
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "Documentación Hitofusion",
+    "url": "/",
+    "text": "Documentación Hitofusion Centro de documentación técnica para integraciones Odoo. Accedé a especificaciones, arquitectura y referencias de API de cada caso implementado. Integraciones disponibles 🦷 Deltav Integración entre Deltav y Odoo 17 mediante middleware REST → JSON-RPC. Sincronización de contactos, productos con variantes, listas de materiales y pagos conciliados con mapping externo de IDs. Aspecto Detalle Versión 1.0 — Julio 2026 Auth API Key + JWT Formato REST/JSON Idempotencia external_ref en POST 📖 Ver documentación → 🏭 Producción API de integración Odoo Producción v14 . Dos casos de operación: demanda por venta con fabricación MRP y producción directa desde planificador externo. Sincronización de maestros primarios y secundarios. Aspecto Detalle Versión v14 — Julio 2026 Auth Bearer Token Formato REST/JSON UTF-8 Idempotencia Idempotency-Key + external_id 📖 Ver documentación → Estructura de cada integración Cada caso documentado sigue la misma estructura para que sea predecible navegar: Sección Qué contiene Introducción Objetivo de negocio, alcance (incluido / fuera de alcance), casos de uso Arquitectura Diagramas de secuencia PlantUML con flujos detallados, capas del sistema y dependencias API Doc Referencia completa: endpoints, payloads, parámetros, respuestas, errores y mapeo con modelos Odoo Recursos técnicos Recurso Descripción Formato JSON UTF-8, fechas ISO 8601 Autenticación Bearer Token o API Key + JWT según la integración Idempotencia Soportada en todos los endpoints de escritura Errores Códigos HTTP estándar + payload estructurado con code , message y field Rate Limit 100 req/min por credencial ( 429 Too Many Requests ) Timeout 30s REST / 60s operaciones batch ( 504 Gateway Timeout ) Para equipos de integración Si vas a integrar un sistema externo con Odoo a través de estas APIs: Leé la Introducción de la integración que corresponda — entendé el objetivo y el alcance. Revisá Arquitectura — los diagramas muestran el flujo exacto y las dependencias entre entidades. Usá la API Doc como referencia durante el desarrollo — cada endpoint tiene payloads de ejemplo y tablas de errores. Respetá el orden de carga de maestros — las dependencias están documentadas en cada caso. Implementá idempotencia en tu lado — todos los endpoints de escritura la soportan. 💡 ¿Falta algo? Si necesitás documentar una integración nueva, comunicate con el equipo de Hitofusion."
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "Estructura de cada integración",
+    "url": "/#estructura-de-cada-integraci-n"
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "Integraciones disponibles",
+    "url": "/#integraciones-disponibles"
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "Para equipos de integración",
+    "url": "/#para-equipos-de-integraci-n"
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "Recursos técnicos",
+    "url": "/#recursos-t-cnicos"
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "🏭 Producción",
+    "url": "/#producci-n"
+  },
+  {
+    "page": "Documentación Hitofusion",
+    "topic": "🦷 Deltav",
+    "url": "/#deltav"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "1. Resumen Ejecutivo",
+    "url": "/integraciones/produccion/estimacion/#1-resumen-ejecutivo"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "10. Condiciones de Validez y Próximos Pasos",
+    "url": "/integraciones/produccion/estimacion/#10-condiciones-de-validez-y-pr-ximos-pasos"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "11. Fuentes",
+    "url": "/integraciones/produccion/estimacion/#11-fuentes"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "2. Desglose por Fase",
+    "url": "/integraciones/produccion/estimacion/#2-desglose-por-fase"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "3. Desglose por Rol",
+    "url": "/integraciones/produccion/estimacion/#3-desglose-por-rol"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "4. Arquitectura y Componentes",
+    "url": "/integraciones/produccion/estimacion/#4-arquitectura-y-componentes"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "5. Tamaño Funcional (COSMIC Adaptado)",
+    "url": "/integraciones/produccion/estimacion/#5-tama-o-funcional-cosmic-adaptado"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "6. Alcance y Exclusiones",
+    "url": "/integraciones/produccion/estimacion/#6-alcance-y-exclusiones"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "7. Supuestos y Dependencias",
+    "url": "/integraciones/produccion/estimacion/#7-supuestos-y-dependencias"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "8. Riesgos Identificados",
+    "url": "/integraciones/produccion/estimacion/#8-riesgos-identificados"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "9. Estado de Gates (JEO)",
+    "url": "/integraciones/produccion/estimacion/#9-estado-de-gates-jeo"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Anexo A — WBS Técnica Detallada",
+    "url": "/integraciones/produccion/estimacion/#anexo-a-wbs-t-cnica-detallada"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Conexión Outbound",
+    "url": "/integraciones/produccion/estimacion/#conexi-n-outbound"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Endpoints de Negocio (Inbound)",
+    "url": "/integraciones/produccion/estimacion/#endpoints-de-negocio-inbound"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Endpoints Maestros (Inbound)",
+    "url": "/integraciones/produccion/estimacion/#endpoints-maestros-inbound"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Esta estimación debe reversionarse si cambia:",
+    "url": "/integraciones/produccion/estimacion/#esta-estimaci-n-debe-reversionarse-si-cambia"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Estimación — Integración Odoo Producción v14",
+    "url": "/integraciones/produccion/estimacion/",
+    "text": "Estimación — Integración Odoo Producción v14 Informe Ejecutivo de Estimación · Metodología JEO (Jinzo Estimación Odoo) · 2026-08-06 Metadato Valor Nivel E1 · Presupuestaria Confianza Media Odoo 19 Enterprise Arquitectura Middleware + Módulo Odoo Caso base Caso B (producción directa) KPIs Indicador Valor Horas esperadas 383 h (≈ 48 días-hombre) Rango optimista 224 h (≈ 28 días-hombre) Rango pesimista 596 h (≈ 75 días-hombre) Desviación ±11 h (PERT combinada) 1. Resumen Ejecutivo Se estima el desarrollo de una capa de integración entre un sistema externo y Odoo 19 Enterprise para el módulo de Producción, siguiendo la especificación API v14 documentada en Hitofusion Docs. La solución consiste en un middleware que expone los endpoints definidos en la API doc (inbound) y consume las APIs del sistema externo (outbound), junto con un módulo Odoo custom que extiende los modelos de fabricación, productos, BOMs y routings. Se implementa uno de los dos casos de integración (A: demanda por venta, o B: producción directa). La estimación toma como base el Caso B por ser el de mayor complejidad técnica, e incluye migración de datos históricos . 2. Desglose por Fase Fase Optimista Esperado Pesimista % Análisis y diseño 22 38 60 9.8% Desarrollo 105 187 306 48.8% Migración histórica 21 38 60 9.8% QA y testing 34 56 86 14.6% Documentación 9 15 22 3.8% Deploy y UAT 18 32 46 8.3% Gestión de proyecto 12 19 28 4.9% Total 224 383 596 100% 3. Desglose por Rol Rol Horas esperadas % Dev Senior 170 44.4% QA 70 18.3% Arquitecto 54 14.2% Dev Mid 52 13.6% PM 19 4.9% DevOps 18 4.6% 4. Arquitectura y Componentes Middleware (API Gateway) Framework base (FastAPI), health checks, configuración multi-ambiente Autenticación Bearer Token, logging estructurado JSON, correlation-id Manejo de errores estandarizado con envelope success/data/errors/meta Idempotencia por Idempotency-Key y unicidad de external_id Rate limiting básico Endpoints Maestros (Inbound) POST /master-data/products/upsert → product.product POST /master-data/boms/upsert → mrp.bom + componentes POST /master-data/customers/upsert → res.partner POST /master-data/vendors/upsert → res.partner POST /master-data/warehouses/upsert → stock.warehouse POST /master-data/routings/upsert → mrp.routing.workcenter Endpoints de Negocio (Inbound) POST /case-b/manufacturing-orders → mrp.production (creación directa, confirmación, planificación) GET /status/production-orders/{id} → estado consolidado (MO + stock.move + work orders) Conexión Outbound Cliente HTTP para APIs del sistema externo (autenticación, reintentos, timeouts) Mapeo y transformación bidireccional de contratos de datos Módulo Odoo Custom Campos x_external_id con índices únicos en product, BOM, MO, partner, warehouse, routing Resolución de referencias externas con validación de existencia Extensión de mrp.production para API de creación y planificación Extensión de mrp.bom y mrp.routing.workcenter para sincronización 5. Tamaño Funcional (COSMIC Adaptado) Proceso funcional E X R W CFP Sincronizar productos 1 1 2 1 5 Sincronizar BOMs 1 1 3 2 7 Crear orden de fabricación directa (Caso B) 1 1 4 2 8 Consultar estado de producción 0 1 3 0 4 Sincronizar clientes 1 1 1 1 4 Sincronizar almacenes 1 1 1 1 4 Sincronizar routings 1 1 1 1 4 Total 6 7 15 8 36 E = Entrada · X = Salida · R = Lectura · W = Escritura · CFP = Puntos de Función Cósmica 6. Alcance y Exclusiones ✅ Incluido Desarrollo completo del middleware (todos los endpoints maestros + Caso B + status) Módulo Odoo con extensiones de modelos de producción Migración de datos históricos Conexión outbound a APIs del sistema externo Idempotencia, trazabilidad y manejo de errores Tests unitarios, integración, funcionales y regresión Documentación técnica y funcional Deploy, staging, rollback y UAT interno Coordinación de contratos de integración bilaterales ❌ Fuera de alcance Desarrollo del lado del sistema externo Certificación formal externa o auditoría de seguridad Capacitación de usuarios Soporte post-go-live (más allá de estabilización) Dashboard o monitoreo avanzado Conciliación nocturna automática Caso A adicional si se elige Caso B (y viceversa) 7. Supuestos y Dependencias Odoo 19 Enterprise con módulos MRP, Stock y Ventas instalados y funcionales Las APIs del sistema externo están documentadas y disponibles para análisis Volumen transaccional bajo — sin necesidad de workers asíncronos, colas ni Redis Middleware desplegado on-premise o cloud gestionado con conectividad a Odoo El equipo del sistema externo está disponible para coordinación en tiempo razonable Staging disponible; credenciales gestionadas internamente (~1 día de configuración) Datos históricos en formato estructurado accesible; sin ingeniería inversa de formatos legacy 8. Riesgos Identificados 🔴 Alto Coordinación bilateral bloqueante Probabilidad media · Impacto alto Si el equipo externo demora en responder, ANL-01 y DEV-12/13 se dilatan significativamente. → Mitigación: iniciar coordinación temprano, establecer SLAs de respuesta, definir contrato API como prerequisito de desarrollo. APIs del sistema externo no analizadas Probabilidad media · Impacto alto Complejidad y madurez desconocidas de los contratos outbound. → Mitigación: spike de ~20 h antes de cerrar el rango pesimista. 🟡 Medio Calidad de datos históricos Probabilidad media · Impacto medio Inconsistencias o datos faltantes pueden disparar MIG-02 al extremo pesimista. → Mitigación: análisis de muestra de datos antes de scripts de migración. Cambios en APIs de Odoo 19 MRP Probabilidad baja · Impacto medio APIs de MRP pueden diferir de versiones conocidas. → Mitigación: verificación temprana en staging con módulos reales. 🟢 Bajo Caso no definido (A vs B) Probabilidad baja · Impacto bajo La estimación ya contempla el Caso B como cota superior. Si se elige Caso A, el esfuerzo sería ~20-25 h menor. 9. Estado de Gates (JEO) Gate Estado Descripción G0 ✅ Entrada suficiente G1 ✅ Reutilización revisada G2 ✅ Flujo entendido G3 ⚠️ Pendiente validación G4 ✅ Diseño estimable G5 🔜 Revisión humana G6 🔜 Cierre real 10. Condiciones de Validez y Próximos Pasos Esta estimación debe reversionarse si cambia: La versión o edición de Odoo El caso de integración de A a B (o viceversa) después de iniciado el desarrollo El contrato de API con el sistema externo El volumen transaccional (si pasa a requerir procesamiento asíncrono) La estrategia de arquitectura (middleware → módulo directo) La disponibilidad o alcance de la migración histórica Los criterios de aceptación (si se agrega certificación externa) Próximos pasos recomendados: Validar funcionalmente el entendimiento del flujo y confirmar Caso A o B Ejecutar spike técnico (~20 h) para analizar APIs del sistema externo y cerrar la incertidumbre outbound Revisión funcional y técnica de esta estimación por parte del equipo Con spike completado y revisión aprobada, convertir a E2 comprometible Iniciar coordinación con el equipo del sistema externo en paralelo 11. Fuentes API Doc v14: hitofusion-doc.netlify.app/integraciones/produccion/api-doc — especificación completa de endpoints, contratos, errores y mapeo Odoo Metodología JEO v1.0.0: Jinzo Estimación Odoo — COSMIC adaptado, WBS técnica Odoo, PERT de tres puntos Matriz técnica Odoo: estrategias de solución, componentes WBS, complejidad C1–C5, factores de incertidumbre Q&A con stakeholder: respuestas sobre versión Odoo, middleware, casos, volumen, migración, staging (2026-08-06) Anexo A — WBS Técnica Detallada Fase: Análisis ID Tarea Rol Cx O M P Esp. ANL-01 Análisis de APIs del sistema externo y coordinación de contratos Arquitecto C3 8 14 24 14.7 ANL-02 Diseño de arquitectura del middleware Arquitecto C3 8 12 20 12.7 ANL-03 Diseño de tablas de equivalencia y mapeo de datos Arquitecto C2 6 10 16 10.3 Fase: Desarrollo ID Tarea Rol Cx O M P Esp. DEV-01 Framework base del middleware Dev Senior C2 6 10 16 10.3 DEV-02 Autenticación, logging, correlation-id, rate limiting Dev Senior C3 8 12 18 12.3 DEV-03 Manejo de errores estandarizado y envelope de respuesta Dev Senior C2 4 8 12 8.0 DEV-04 Idempotencia y unicidad de external_id Dev Senior C3 6 10 18 10.7 DEV-05 Endpoint products/upsert Dev Mid C2 5 9 14 9.2 DEV-06 Endpoint boms/upsert con componentes Dev Senior C3 10 16 Pendiente Pendiente Nota: La WBS original del informe fuente está parcialmente truncada a partir de DEV-06. Las tareas restantes de desarrollo, migración, QA, deploy y gestión de proyecto completan el total de 383 h esperadas."
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Fase: Análisis",
+    "url": "/integraciones/produccion/estimacion/#fase-an-lisis"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Fase: Desarrollo",
+    "url": "/integraciones/produccion/estimacion/#fase-desarrollo"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "KPIs",
+    "url": "/integraciones/produccion/estimacion/#kpis"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Middleware (API Gateway)",
+    "url": "/integraciones/produccion/estimacion/#middleware-api-gateway"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Módulo Odoo Custom",
+    "url": "/integraciones/produccion/estimacion/#m-dulo-odoo-custom"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "Próximos pasos recomendados:",
+    "url": "/integraciones/produccion/estimacion/#pr-ximos-pasos-recomendados"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "✅ Incluido",
+    "url": "/integraciones/produccion/estimacion/#incluido"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "❌ Fuera de alcance",
+    "url": "/integraciones/produccion/estimacion/#fuera-de-alcance"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "🔴 Alto",
+    "url": "/integraciones/produccion/estimacion/#alto"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "🟡 Medio",
+    "url": "/integraciones/produccion/estimacion/#medio"
+  },
+  {
+    "page": "Estimación — Integración Odoo Producción v14",
+    "topic": "🟢 Bajo",
+    "url": "/integraciones/produccion/estimacion/#bajo"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Cronograma Estimado",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#cronograma-estimado"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Datos del Proyecto",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#datos-del-proyecto"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Descripción del Servicio",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#descripci-n-del-servicio"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Entregables",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#entregables"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Ficha Técnica — Estimación de Desarrollo",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/",
+    "text": "Ficha Técnica — Estimación de Desarrollo Datos del Proyecto Campo Valor Proyecto Integración Odoo 17 — DeltaV Connector Fecha 2025-07-15 Versión 6.0.0 Modalidad Asistido por IA (horas humanas de supervisión) Descripción del Servicio Desarrollo de una capa de integración entre un sistema externo (Emerson DeltaV) y Odoo 17, compuesta por tres componentes: Middleware REST (FastAPI) con 4 grupos de endpoints: Contactos, Productos, Listas de Materiales y Pagos, más sincronización batch. Módulo Odoo deltav_connector con modelos, vistas, controladores HTTP y seguridad. Módulo Odoo integrador_odoo2delta — extiende Ventas ( sale.order ) y Compras ( purchase.order ) para notificar automáticamente al sistema externo vía API cuando se crean o confirman documentos. El diseño técnico ya está documentado (contratos de API, mapeo de campos, estrategia de idempotencia). La implementación se acelera con generación de código por IA, donde el equipo humano supervisa, valida y ajusta. Horas por Fase Fase Entregables Horas Setup Middleware base, Docker, auth JWT, health check 4h Contactos POST/GET /v1/contacts con idempotencia, tags, contactos hijos 6h Productos POST/GET /v1/products con variantes, supplierinfo, categorías 6h BoMs POST/GET /v1/boms con dependencias, tipos 5h Pagos POST/GET /v1/payments con conciliación de facturas 6h Bulk Sync POST /v1/sync/batch con orden topológico 3h Hardening Rate limiting, circuit breaker, logging, métricas, OpenAPI 5h Documentación README, ejemplos curl, manual de operaciones 3h Pruebas + Staging Tests integrales, despliegue en staging 5h Módulo deltav_connector Modelos, vistas, controladores HTTP, sync, seguridad 10h Módulo integrador_odoo2delta Herencia sale.order + purchase.order, hooks, HTTP client, configuración, seguridad, pruebas, docs 21h Total 74h Horas por Rol Rol EPs deltav_connector integrador_odoo2delta Total Dev Senior 38h 9h 19h 66h QA 3h 1h 2h 6h PM 2h — — 2h Total 43h 10h 21h 74h Rol Horas Tarifa (a completar) Importe Dev Senior 66h $________ $________ QA 6h $________ $________ PM 2h $________ $________ Total 74h $________ Cronograma Estimado Semana Horas Foco Hitos Semana 1 24h Setup + Contactos + Productos Middleware corriendo, 2 endpoints funcionales Semana 2 24h BoMs + Pagos + Bulk Sync + Hardening 4 endpoints + batch sync funcional Semana 3 26h deltav_connector + integrador_odoo2delta + deploy Módulos instalados, notificaciones funcionales en staging Total 74h Proyecto listo para validación Entregables Middleware REST (FastAPI) con 4 grupos de endpoints + bulk sync Rate limiting, circuit breaker, logging estructurado Métricas Prometheus + documentación OpenAPI Módulo Odoo deltav_connector instalado y funcional Módulo Odoo integrador_odoo2delta — notificaciones de ventas y compras al sistema externo Documentación completa (README, API docs, flujo de notificaciones, manual de operaciones) Despliegue en staging listo para validación Supuestos Odoo 17 operativo y accesible desde el inicio DeltaV expone API REST documentada para recibir notificaciones de ventas y compras IA genera ~80% del código correcto (si no, +10-20h) Los contratos de endpoints no sufren modificaciones durante el desarrollo Una sola persona ejecuta con asistencia de IA La infraestructura de staging ya existe Fuera de Alcance Licencias Odoo Enterprise Infraestructura y servidores Desarrollo del lado DeltaV (PLC, DCS, OPC server) Capacitación formal a usuarios finales Soporte extendido post-producción Notificaciones de otros modelos Odoo (facturas, albaranes, inventario) Procesamiento de respuestas de negocio desde el sistema externo Ficha técnica v6.0.0 — 74h totales Documento de uso interno. Sujeto a validación comercial."
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Fuera de Alcance",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#fuera-de-alcance"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Horas por Fase",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#horas-por-fase"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Horas por Rol",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#horas-por-rol"
+  },
+  {
+    "page": "Ficha Técnica — Estimación de Desarrollo",
+    "topic": "Supuestos",
+    "url": "/integraciones/deltav/estimacion-mvp-contactos/#supuestos"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "1. Contexto",
+    "url": "/infraestructura/instalacion-odoo-local/#1-contexto"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "10. Tareas y etapas",
+    "url": "/infraestructura/instalacion-odoo-local/#10-tareas-y-etapas"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "11. Roles principales",
+    "url": "/infraestructura/instalacion-odoo-local/#11-roles-principales"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "12. Tipos de asistencia",
+    "url": "/infraestructura/instalacion-odoo-local/#12-tipos-de-asistencia"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "13. Riesgos principales",
+    "url": "/infraestructura/instalacion-odoo-local/#13-riesgos-principales"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "14. Decisión y próximos pasos",
+    "url": "/infraestructura/instalacion-odoo-local/#14-decision-y-proximos-pasos"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "15. Fuentes",
+    "url": "/infraestructura/instalacion-odoo-local/#15-fuentes"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "2. Objetivo",
+    "url": "/infraestructura/instalacion-odoo-local/#2-objetivo"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "3. Alcance",
+    "url": "/infraestructura/instalacion-odoo-local/#3-alcance"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "4. Condiciones para la factibilidad",
+    "url": "/infraestructura/instalacion-odoo-local/#4-condiciones-para-la-factibilidad"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5. Arquitectura e infraestructura",
+    "url": "/infraestructura/instalacion-odoo-local/#5-arquitectura-e-infraestructura"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.1 Stack tecnológico de referencia",
+    "url": "/infraestructura/instalacion-odoo-local/#5-1-stack-tecnologico-de-referencia"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.2 Sistema operativo e instalación",
+    "url": "/infraestructura/instalacion-odoo-local/#5-2-sistema-operativo-e-instalacion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.3 Dimensionamiento preliminar",
+    "url": "/infraestructura/instalacion-odoo-local/#5-3-dimensionamiento-preliminar"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.4 Ambientes",
+    "url": "/infraestructura/instalacion-odoo-local/#5-4-ambientes"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.5 Tecnologías recomendadas para ambientes, despliegues y recuperación",
+    "url": "/infraestructura/instalacion-odoo-local/#5-5-tecnologias-recomendadas-para-ambientes-despliegues-y-recuperacion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.6 Equivalencia de servicios Odoo.sh en infraestructura local",
+    "url": "/infraestructura/instalacion-odoo-local/#5-6-equivalencia-odoo-sh-local"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "5.7 Datos necesarios para cerrar el dimensionamiento",
+    "url": "/infraestructura/instalacion-odoo-local/#5-7-datos-necesarios-para-cerrar-el-dimensionamiento"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "6. Seguridad, continuidad y operación",
+    "url": "/infraestructura/instalacion-odoo-local/#6-seguridad-continuidad-y-operacion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "7. Integración con el sistema externo",
+    "url": "/infraestructura/instalacion-odoo-local/#7-integracion-con-el-sistema-externo"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "7.1 Alternativas",
+    "url": "/infraestructura/instalacion-odoo-local/#7-1-alternativas"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "7.2 Criterios obligatorios",
+    "url": "/infraestructura/instalacion-odoo-local/#7-2-criterios-obligatorios"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "7.3 Referencia Hitofusion",
+    "url": "/infraestructura/instalacion-odoo-local/#7-3-referencia-hitofusion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "8. Comunicación y gobierno técnico",
+    "url": "/infraestructura/instalacion-odoo-local/#8-comunicacion-y-gobierno-tecnico"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "9. Control e intervención sobre desarrollos",
+    "url": "/infraestructura/instalacion-odoo-local/#9-control-e-intervencion-sobre-desarrollos"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Acciones requeridas",
+    "url": "/infraestructura/instalacion-odoo-local/#acciones-requeridas"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Backups y recuperación",
+    "url": "/infraestructura/instalacion-odoo-local/#backups-y-recuperacion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Cambios y actualizaciones",
+    "url": "/infraestructura/instalacion-odoo-local/#cambios-y-actualizaciones"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Decisión preliminar",
+    "url": "/infraestructura/instalacion-odoo-local/#decision-preliminar"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Documentación oficial de infraestructura y operación",
+    "url": "/infraestructura/instalacion-odoo-local/#documentacion-oficial-de-infraestructura-y-operacion"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Documentación oficial de Odoo 19",
+    "url": "/infraestructura/instalacion-odoo-local/#documentacion-oficial-de-odoo-19"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Documentación oficial de Odoo.sh",
+    "url": "/infraestructura/instalacion-odoo-local/#documentacion-oficial-de-odoo-sh"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Incluye",
+    "url": "/infraestructura/instalacion-odoo-local/#incluye"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Información pendiente para la versión final",
+    "url": "/infraestructura/instalacion-odoo-local/#informacion-pendiente-para-la-version-final"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Informe ejecutivo de factibilidad",
+    "url": "/infraestructura/instalacion-odoo-local/#informe-ejecutivo-de-factibilidad"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Instalación local, operación e integración de Odoo Enterprise 19.0 en Codimat",
+    "url": "/infraestructura/instalacion-odoo-local/#instalacion-local-operacion-e-integracion-de-odoo-enterprise-19-0-en-codimat"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Instalación Odoo Local",
+    "url": "/infraestructura/instalacion-odoo-local/",
+    "text": "Instalación Odoo Local Informe ejecutivo de factibilidad para instalar, operar e integrar Odoo Enterprise 19.0 en infraestructura local. Infraestructura Versión 0.4 20 de agosto de 2026 Borrador para entrega Informe ejecutivo de factibilidad Instalación local, operación e integración de Odoo Enterprise 19.0 en Codimat Versión: 0.4 — borrador para entrega Fecha: 20 de agosto de 2026 Conclusión: viable con condiciones Resumen ejecutivo La instalación de Odoo Enterprise 19.0 en infraestructura local de Codimat es técnicamente viable , siempre que se cumplan las condiciones de infraestructura, seguridad, operación, licenciamiento y gobierno indicadas en este informe. También es viable integrar Odoo con el sistema externo utilizado por Codimat para procesos operativos y financieros. La integración deberá validarse mediante un relevamiento funcional y técnico y, antes de su implementación definitiva, mediante una prueba de concepto. La recomendación es avanzar en cuatro etapas: Relevamiento de infraestructura, usuarios, procesos e integración. Diseño y dimensionamiento de la solución. Prueba de instalación, respaldo, recuperación e integración. Implementación controlada, homologación y salida a producción. No se recomienda iniciar la instalación productiva hasta completar el relevamiento, confirmar las licencias y aprobar la arquitectura. 1. Contexto Codimat solicitó evaluar: Las implicancias técnicas de instalar Odoo Enterprise 19.0 en infraestructura local. La forma de trabajo entre el área técnica de Codimat y nuestra empresa. Los mecanismos para controlar, supervisar y eventualmente intervenir en desarrollos. La integración de Odoo con un sistema externo de gestión operativa y financiera. Este documento presenta una factibilidad preliminar y las condiciones necesarias para tomar una decisión definitiva. 2. Objetivo Determinar si Codimat puede instalar, operar, mantener e integrar Odoo Enterprise 19.0 en infraestructura propia de manera segura, controlada y sostenible. 3. Alcance Incluye Arquitectura y requerimientos técnicos. Ambientes de desarrollo, homologación y producción. Seguridad, backups, monitoreo y continuidad. Integración con sistemas externos. Gobierno del desarrollo y control de cambios. Roles, tareas y tipos de asistencia. No incluye Instalación o migración efectiva. Desarrollo final de la integración. Presupuesto y cronograma contractual. SLA definitivo. Dimensionamiento final sin métricas reales. 4. Condiciones para la factibilidad La implementación será factible si Codimat y nuestra empresa acuerdan y verifican: Infraestructura Linux compatible con Odoo 19. Licencia Odoo Enterprise y plan apto para instalación local e integración. Ambientes separados de desarrollo, homologación y producción. PostgreSQL, almacenamiento y red dimensionados para la carga real. HTTPS/TLS, DNS, proxy reverso y correo correctamente configurados. Backups automatizados y restauraciones probadas. Monitoreo, logs y alertas. Accesos nominados, mínimo privilegio y protección de credenciales. Repositorio Git, revisión de código y despliegues controlados. Responsables técnicos y funcionales de ambas empresas. Documentación y ambiente de prueba del sistema externo. 5. Arquitectura e infraestructura 5.1 Stack tecnológico de referencia La solución deberá contemplar, como mínimo: Componente Función Linux Sistema operativo de producción Odoo Enterprise 19.0 Aplicación de gestión PostgreSQL Base de datos Nginx o proxy equivalente Publicación, HTTPS y enrutamiento Certificados TLS Protección del tráfico Git Versionado de desarrollos y configuración permitida Sistema de backups Respaldo de base, filestore y configuración Monitoreo y logs Detección, diagnóstico y trazabilidad CI/CD Pruebas y despliegues controlados Como ejemplo técnico puede consultarse el script comunitario de instalación de Yenthe Van Ginneken . El script muestra la orquestación habitual de usuario de sistema, dependencias, PostgreSQL, fuentes Community y Enterprise, servicio Odoo, Nginx, certificados y generación de configuración. Este repositorio es una referencia comunitaria, no documentación oficial de Odoo . No debe ejecutarse directamente en producción sin revisar el código, fijar versiones, adaptar seguridad, backups, rutas, credenciales y parámetros a la arquitectura aprobada por Codimat. 5.2 Sistema operativo e instalación Para producción se recomienda Linux. La documentación oficial de Odoo 19 desaconseja Windows para despliegues productivos. Odoo ofrece instalación mediante paquetes y desde código fuente; la opción deberá definirse según el modelo de mantenimiento y desarrollo. 5.3 Dimensionamiento preliminar La siguiente tabla es una referencia inicial , no un dimensionamiento definitivo. Supone una instalación optimizada, carga transaccional normal y almacenamiento rápido. Debe ajustarse con métricas, módulos, adjuntos, reportes, automatizaciones, tareas programadas e integraciones reales. Perfil Usuarios nominales Usuarios concurrentes Tipo de integración CPU producción RAM producción Almacenamiento inicial* Inicial Hasta 25 Hasta 5 Sin integración o procesos por lote de baja frecuencia 4 vCPU 8 GB 150–250 GB Medio 26–75 6–15 API con carga moderada y tareas periódicas 8 vCPU 16 GB 300–500 GB Alto 76–150 16–30 Integraciones frecuentes, automatizaciones y reportes intensivos 12–16 vCPU 32 GB 500 GB–1 TB Especial Más de 150 Más de 30 Integración intensiva, múltiples sistemas o alta disponibilidad Diseño específico Diseño específico Según datos, adjuntos y retención \\* El almacenamiento debe incluir crecimiento de PostgreSQL y filestore, espacio operativo, logs y backups según la política de retención. Las copias de seguridad no deben depender únicamente del mismo servidor. La guía oficial de Odoo utiliza como referencia aproximadamente un worker por cada seis usuarios concurrentes , con un máximo orientativo de workers condicionado por CPU. La memoria debe calcularse según cantidad y tipo de workers. Las integraciones, cron y procesos pesados consumen capacidad adicional. 5.4 Ambientes Ambiente Capacidad recomendada Uso Desarrollo 2–4 vCPU, 4–8 GB RAM Desarrollo, pruebas unitarias y revisión técnica Homologación Al menos 50 % de producción; igual arquitectura y versiones Pruebas funcionales, integración, despliegue y restauración Producción Según perfil y prueba de carga Operación real Homologación deberá reproducir las versiones, módulos y configuración relevante de producción. Para pruebas de rendimiento deberá contar temporalmente con capacidad equivalente a producción. 5.5 Tecnologías recomendadas para ambientes, despliegues y recuperación Se recomienda separar la administración de infraestructura, los despliegues y los respaldos. La arquitectura propuesta es la siguiente: Nivel Tecnología recomendada Función Virtualización Proxmox VE Crear y aislar las VPS de producción y staging; administrar recursos, redes, permisos y snapshots Despliegues Dokploy Gestionar servicios con Docker Compose, Git, variables por ambiente, dominios, certificados, logs y despliegues trazables Backup de instancias Proxmox Backup Server Realizar respaldos incrementales y verificados de las VPS para recuperación integral ante desastre Backup de PostgreSQL pgBackRest Ejecutar backups completos e incrementales, archivo WAL y recuperación a un punto en el tiempo Backup de filestore y volúmenes Restic hacia almacenamiento S3 compatible Mantener copias cifradas y versionadas fuera del servidor productivo; puede utilizarse MinIO en una ubicación independiente Monitoreo Uptime Kuma , Prometheus y Grafana Controlar disponibilidad, recursos, métricas y alertas Producción y staging deberán ejecutarse en VPS separadas, sin compartir base de datos, filestore, secretos ni credenciales. Staging deberá reproducir las versiones y la configuración relevante de producción, utilizando datos anonimizados y credenciales neutralizadas. Proxmox VE administrará la infraestructura y Dokploy administrará los despliegues. Los cambios continuarán pasando por Git, revisión, homologación, aprobación y rollback. Los snapshots se utilizarán como apoyo operativo, pero no reemplazarán los backups de PostgreSQL, filestore y configuración. La combinación recomendada es Proxmox VE + Dokploy + Proxmox Backup Server + pgBackRest + Restic/S3 . Esta arquitectura es modular, auditable y evita depender de una única herramienta para el despliegue y la recuperación. 5.6 Equivalencia de servicios Odoo.sh en infraestructura local Odoo.sh concentra en una plataforma administrada el alojamiento, los ambientes, la integración continua, los despliegues, los backups, el monitoreo y distintas herramientas operativas. Una instalación local puede reproducir estas capacidades, pero requiere combinar tecnologías y asumir explícitamente su administración, seguridad y continuidad. La clasificación indica el orden recomendado. “Mínimo inicial” reúne lo necesario antes de operar producción con seguridad, recuperación y trazabilidad. “Etapa posterior” identifica mejoras que pueden incorporarse después de estabilizar la operación, salvo que los requisitos de disponibilidad, escala o cumplimiento de Codimat las vuelvan obligatorias desde el inicio. Mínimo inicial Etapa posterior Servicio y prioridad Qué resuelve Odoo.sh Equivalente recomendado en local Condición operativa local Alojamiento administrado Provisión y operación de la plataforma Odoo Proxmox VE y VMs Linux separadas Codimat/HitoFusion administran capacidad, sistema operativo, red y disponibilidad Alta disponibilidad Continuidad de la infraestructura administrada Clúster Proxmox, almacenamiento redundante y nodo alternativo Requiere quorum, redundancia eléctrica/red y pruebas de failover; aplicar sólo si RTO/RPO lo justifican Repositorio e integración Git GitHub, deploy key, webhook y trazabilidad de commits GitHub o GitLab, deploy keys y ramas protegidas Definir propietarios, revisores, permisos y política de ramas Build automático por push Cada push puede crear un build asociado a la rama GitHub Actions o GitLab CI + Dokploy + Docker Compose Pipeline versionado, secretos protegidos y despliegue condicionado a controles Builds aislados Cada build se ejecuta en un contenedor Linux aislado Imágenes Docker inmutables y proyectos separados en Dokploy No reutilizar bases, volúmenes ni secretos entre ambientes Desarrollo por rama Base nueva con datos demo y pruebas automáticas Entornos efímeros por rama/PR con Docker Compose y PostgreSQL temporal Automatizar alta, URL, expiración y eliminación Staging con copia de producción Cada rebuild usa una copia reciente de producción VM de staging + restore pgBackRest + copia Restic del filestore Anonimizar datos y neutralizar correo, cron, pagos, webhooks y credenciales Producción Mantiene la base productiva sobre el último build válido VM productiva administrada por Dokploy Promover únicamente artefactos homologados y aprobados Promoción entre ambientes Movimiento controlado de ramas hacia staging y producción Pull request, tags/releases y aprobación manual del job Exigir evidencia de QA, segregación de funciones y ventana de cambio Validación y rollback Si un build productivo falla, conserva el último válido Health checks + blue/green o release anterior por digest El rollback de código no revierte cambios de esquema; exigir backup previo Integración continua y tests Instala módulos y ejecuta pruebas en builds de desarrollo odoo-bin --test-enable --stop-after-init , lint y análisis de seguridad en CI Bloquear el merge ante fallas y mantener una suite mínima Dependencias Python Instala las declaradas en requirements.txt Dockerfile reproducible y dependencias con versiones fijadas Escanear vulnerabilidades y prohibir instalaciones manuales en producción Módulos externos Integra submódulos y repositorios privados mediante deploy keys Git submodules/subtree o repositorios internos versionados Fijar commits y revisar código, licencias y credenciales de lectura Registro de artefactos Conserva los componentes de cada build dentro de la plataforma GitHub Container Registry o GitLab Container Registry Definir retención, firma, escaneo y limpieza de imágenes PostgreSQL Base integrada y operada junto con Odoo PostgreSQL dedicado o aislado y ajustado para Odoo Monitoreo, mantenimiento, vacuum, capacidad y upgrades quedan a cargo local Backups de base Backups administrados, importación y descarga de dumps pgBackRest con full/differential/incremental y WAL/PITR Definir RPO/RTO, retención, cifrado, inmutabilidad y alertas Filestore y volúmenes Protección coordinada de los datos de la instancia Restic hacia S3/MinIO externo Restaurar DB y filestore desde un mismo punto consistente Recuperación integral Recuperación gestionada por la plataforma Proxmox Backup Server en ubicación independiente No sustituye los backups específicos de PostgreSQL y filestore Backup pre-despliegue Protección automática antes de cambios sensibles Job pre-deploy que ejecuta y valida un backup consistente El pipeline debe abortar si el backup o su verificación falla Logs operativos Logs de instalación, actualización, dependencias y ejecución Logs de Docker/Dokploy con rotación como mínimo; Loki + Alloy/Promtail + Grafana en una etapa posterior Desde el inicio deben poder consultarse incidentes sin agotar el disco. La búsqueda centralizada, retención extendida y alertas avanzadas pueden diferirse Métricas y disponibilidad Monitoring y estado por build Prometheus + Grafana + Alertmanager + Uptime Kuma Definir umbrales, responsables, escalamiento y retención Shell, SSH y consola Odoo Web shell, SSH, psql y Odoo shell VPN/bastión, SSH con llaves, docker exec , psql y Odoo shell MFA, cuentas nominadas, mínimo privilegio y auditoría Editor y consolas web Editor, terminales, Python/Odoo shell y notebooks VS Code Remote SSH; code-server/Jupyter sólo en desarrollo controlado Producción de sólo lectura para código; todo cambio persistente vuelve a Git Gestión de secretos Configuración protegida dentro de la plataforma Secretos de Dokploy + SOPS/age o Vault según complejidad Fuera de Git, cifrados, rotables y separados por ambiente Correo por ambiente Servidor saliente y consulta/captura en entornos no productivos SMTP transaccional en producción + Mailpit en desarrollo/staging Neutralizar destinatarios y separar credenciales y dominios Dominios y TLS URLs por build y dominio productivo DNS + Traefik de Dokploy + ACME/Let’s Encrypt o PKI corporativa Restringir staging y automatizar renovación y monitoreo de certificados Accesos por rol Roles de admin, tester y developer según ambiente RBAC en Git, Dokploy, Proxmox, VPN, monitoreo y Odoo Matriz RACI/RBAC, altas/bajas, mínimo privilegio y revisión periódica Auditoría Historial de builds, commits y acciones administrativas Logs de Git, CI, Dokploy, Proxmox, VPN y secretos centralizados Sincronizar hora, retener evidencia y registrar quién aprobó y desplegó Escalado y capacidad Ajuste de workers y almacenamiento del proyecto CPU/RAM/storage de Proxmox + ajuste de workers Odoo y PostgreSQL Basar cambios en métricas, concurrencia, cron, integraciones y pruebas de carga Actualizaciones y seguridad Odoo opera la plataforma subyacente Ansible, hardening, firewall/VPN y escaneo con Trivy Calendario de parches, staging previo, vulnerabilidades y rollback Soporte de plataforma Operación de Odoo.sh a cargo de Odoo Contrato operativo Codimat–HitoFusion + soporte Odoo Enterprise Delimitar hardware, SO, DB, Odoo, customizaciones e integración Etapa posterior: alta disponibilidad, entornos efímeros por rama, registro dedicado de artefactos, backup integral de VMs, centralización avanzada de logs y editor/consolas web. En el caso de los logs, la consulta local y la rotación son parte del mínimo inicial; únicamente se posterga su centralización avanzada. Estas capacidades no se eliminan: se difieren hasta contar con una operación base estable o se adelantan si el RPO, el RTO, la cantidad de desarrollos, la auditoría o el nivel de servicio contratado lo requieren. Equivalencia recomendada: Proxmox VE + Dokploy/Docker Compose + GitHub Actions o GitLab CI + PostgreSQL/pgBackRest + Restic/S3 + Proxmox Backup Server + Prometheus/Grafana/Loki + Uptime Kuma + Mailpit + VPN/SSH controlado. La equivalencia local no se obtiene instalando una sola herramienta. Odoo.sh incluye operación administrada; en local deberán diseñarse, documentarse, monitorearse y sostenerse cada servicio, sus procedimientos y sus responsables. La asignación definitiva se completará con Codimat mediante una columna o matriz de responsabilidad: Infraestructura Codimat, HitoFusion o responsabilidad compartida. 5.7 Datos necesarios para cerrar el dimensionamiento Usuarios nominales y concurrentes. Módulos y procesos críticos. Tamaño actual y crecimiento de datos y adjuntos. Cantidad y duración de tareas programadas. Volumen y frecuencia de integraciones. Uso de reportes, contabilidad, inventario, manufactura y comercio electrónico. Requisitos de disponibilidad, RPO y RTO. 6. Seguridad, continuidad y operación Seguridad mínima Accesos nominados y mínimo privilegio. MFA, VPN o bastión para administración remota. Credenciales fuera del código y rotación periódica. HTTPS/TLS y restricción de puertos. Revisión de módulos propios y de terceros. Actualizaciones controladas de sistema operativo, dependencias y Odoo. Registro de accesos, errores, cambios e incidentes. Backups y recuperación Se aplicará la regla 3-2-1 : tres copias, en dos medios distintos y al menos una fuera de la infraestructura principal. PostgreSQL: pgBackRest con backups completos e incrementales, archivo continuo de WAL y recuperación a un punto en el tiempo. Filestore, configuraciones y volúmenes persistentes: Restic o la función de backup de volúmenes de Dokploy , con destino S3 compatible fuera del servidor productivo. Instancias completas: Proxmox Backup Server alojado en hardware o almacenamiento independiente para recuperación ante desastre. Código y módulos propios: repositorio Git y copia externa del repositorio. La base de datos y el filestore deberán respaldarse de forma coordinada. Se definirán el punto máximo de pérdida aceptable ( RPO ), el tiempo objetivo de recuperación ( RTO ) y la política de retención. Las restauraciones completas deberán probarse y documentarse periódicamente; un backup no se considerará válido hasta verificar su restauración. Los snapshots de Proxmox o Docker facilitan una vuelta atrás operativa, pero no reemplazan los backups independientes de datos, archivos y configuración. Cambios y actualizaciones Todo cambio deberá pasar por: Ticket → análisis → desarrollo/configuración → revisión → prueba en homologación → aprobación → despliegue → validación → cierre o rollback No se realizarán cambios directos en producción salvo emergencia documentada. 7. Integración con el sistema externo 7.1 Alternativas Odoo 19 incorpora la API externa JSON-2. También admite automatizaciones y webhooks. Para procesos complejos puede utilizarse un servicio intermedio que gestione transformación, colas, reintentos y trazabilidad. Mecanismo Uso recomendado API JSON-2 Consultas y operaciones síncronas sobre Odoo Webhooks Notificación de eventos entre sistemas Middleware o capa de integración Integraciones complejas, desacople, transformación, reintentos y monitoreo Archivos por lote Cuando el sistema externo no dispone de API La documentación de Odoo indica que la API externa requiere un plan Custom. Esta condición deberá confirmarse antes de aprobar la arquitectura. 7.2 Criterios obligatorios Cada flujo de integración deberá definir: Sistema de origen y sistema maestro del dato. Entidades y campos. Dirección y frecuencia. Autenticación y permisos. Validaciones y reglas de negocio. Idempotencia y prevención de duplicados. Timeouts, reintentos y recuperación de errores. Trazabilidad y conciliación. Responsable funcional y técnico. 7.3 Referencia Hitofusion La documentación interna de Hitofusion deberá utilizarse como estándar para diseñar y documentar las integraciones. Cada integración deberá registrar objetivo y alcance, arquitectura y secuencia, endpoints y payloads, autenticación, mapeo con Odoo, idempotencia, errores, límites, orden de carga y pruebas. El objetivo es centralizar contratos, flujos, transformaciones, estados y evidencias operativas en un proceso mantenible y auditable. Los casos ya publicados por Hitofusion son antecedentes metodológicos. No reemplazan el análisis específico del sistema externo de Codimat ni demuestran por sí solos compatibilidad con Odoo 19. Antes de construir el conector se realizará una prueba de concepto con al menos un flujo operativo y uno financiero. 8. Comunicación y gobierno técnico Cada empresa designará un referente titular y uno alterno. Instancia Canal Objetivo Solicitudes e incidentes Sistema de tickets Registrar prioridad, impacto, evidencia y seguimiento Coordinación técnica Reunión semanal durante el proyecto Resolver bloqueos y tomar decisiones técnicas Seguimiento ejecutivo Reunión quincenal o mensual Revisar avance, riesgos y decisiones Incidente crítico Canal de escalamiento acordado Contener, recuperar y comunicar Los tiempos de respuesta, horarios de cobertura y severidades deberán quedar definidos en el acuerdo de servicio correspondiente. 9. Control e intervención sobre desarrollos Codimat podrá supervisar y participar mediante: Acceso al repositorio según el rol acordado. Tickets relacionados con commits y entregas. Ramas protegidas y pull/merge requests. Revisión técnica y funcional. Pruebas automáticas y evidencias de homologación. Versionado y notas de cambio. Documentación de módulos e integración. Aprobación previa al despliegue productivo. Plan de rollback. Toda intervención de Codimat deberá respetar el mismo proceso. No se admitirán cambios no trazados en producción. 10. Tareas y etapas Etapa Tareas Criterio de cierre 1. Relevamiento Usuarios, procesos, infraestructura, seguridad, datos e integración Información validada por Codimat 2. Diseño Arquitectura, dimensionamiento, roles, riesgos y plan Diseño aprobado 3. Prueba de concepto Instalación, integración, backup y restauración Evidencia técnica satisfactoria 4. Preparación Ambientes, Git, CI/CD, monitoreo y procedimientos Checklist aprobado 5. Implementación Instalación, configuración, desarrollos y migración acordada Versión homologada 6. Producción Despliegue, validación y estabilización Aceptación formal 7. Transferencia Capacitación y documentación Responsables habilitados 11. Roles principales Rol Responsabilidad Sponsor de Codimat Aprobar alcance, prioridades y decisiones Referente funcional Validar procesos y resultados Infraestructura y seguridad de Codimat Proveer y operar la plataforma acordada Responsable del sistema externo Entregar documentación, acceso y soporte Consultoría funcional Odoo Configuración y validación funcional Arquitectura/DevOps Arquitectura, ambientes, despliegue y operación Desarrollo e integración Módulos, conectores y correcciones QA Planificar y verificar pruebas Soporte Recibir, clasificar y resolver incidentes La asignación definitiva se formalizará mediante una matriz RACI. 12. Tipos de asistencia Consultoría técnica y funcional. Diseño y revisión de arquitectura. Instalación y configuración. Desarrollo e integración. Auditoría de código y despliegues. Mesa de ayuda y soporte reactivo. Monitoreo y mantenimiento preventivo. Mantenimiento correctivo y evolutivo. Capacitación y transferencia de conocimiento. Acompañamiento a producción. Cada asistencia deberá indicar alcance, responsables, horario, tiempos objetivo, exclusiones y evidencia de cierre. 13. Riesgos principales Riesgo Mitigación Infraestructura insuficiente Relevamiento, métricas y prueba de carga Pérdida de datos Backups integrales y restauraciones probadas Integración inconsistente Idempotencia, conciliación, reintentos y monitoreo Cambios sin control Git, tickets, revisión y aprobación Dependencia de personas Documentación, alternos y transferencia Credenciales expuestas Gestor de secretos, mínimo privilegio y rotación Licencia o plan inadecuado Confirmación comercial previa 14. Decisión y próximos pasos Decisión preliminar La instalación local de Odoo Enterprise 19.0 en Codimat es viable con condiciones. Acciones requeridas Designar responsables de ambas empresas. Completar el relevamiento técnico y funcional. Confirmar licencias y plan Odoo. Obtener documentación y acceso de prueba del sistema externo. Definir arquitectura y dimensionamiento. Ejecutar una prueba de concepto de instalación e integración. Probar backup y restauración. Aprobar seguridad, operación, alcance, cronograma y costos. Solo después de completar estas acciones se emitirá la recomendación definitiva de implementación. 15. Fuentes Documentación oficial de Odoo 19 Instalación on-premise Instalación desde código fuente Paquetes oficiales Configuración de producción, workers y memoria API externa JSON-2 Automatizaciones y webhooks Documentación oficial de Odoo.sh Funcionalidades de Odoo.sh Builds y ambientes Configuración, roles e integración con GitHub Contenedores y dependencias Editor y consolas Documentación oficial de infraestructura y operación Proxmox VE — guía de administración Proxmox Backup Server — documentación Dokploy — despliegues con Docker Compose Dokploy — backup de volúmenes pgBackRest — guías de usuario Restic — documentación MinIO — documentación Prometheus — documentación Grafana — documentación Uptime Kuma — repositorio oficial Referencias complementarias Documentación interna de Hitofusion Script comunitario de instalación de Odoo Información pendiente para la versión final Inventario de infraestructura de Codimat. Usuarios nominales y concurrentes. Volumen de datos y crecimiento. Requisitos RPO, RTO y disponibilidad. Documentación del sistema externo. Responsables y matriz RACI definitiva. Alcance comercial, cronograma y costos."
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "No incluye",
+    "url": "/infraestructura/instalacion-odoo-local/#no-incluye"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Referencias complementarias",
+    "url": "/infraestructura/instalacion-odoo-local/#referencias-complementarias"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Resumen ejecutivo",
+    "url": "/infraestructura/instalacion-odoo-local/#resumen-ejecutivo"
+  },
+  {
+    "page": "Instalación Odoo Local — Infraestructura",
+    "topic": "Seguridad mínima",
+    "url": "/infraestructura/instalacion-odoo-local/#seguridad-minima"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Arquitectura",
+    "url": "/integraciones/deltav/#arquitectura"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Documentación disponible",
+    "url": "/integraciones/deltav/#documentaci-n-disponible"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Entidades soportadas",
+    "url": "/integraciones/deltav/#entidades-soportadas"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Flujo de notificaciones",
+    "url": "/integraciones/deltav/#flujo-de-notificaciones"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Fuentes",
+    "url": "/integraciones/deltav/#fuentes"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Integración Deltav — Odoo 17",
+    "url": "/integraciones/deltav/",
+    "text": "Integración Deltav — Odoo 17 Versión: 2.0 — Julio 2026 Caso: Deltav Sección: Integraciones Resumen Integración entre el Sistema Externo Deltav y Odoo 17 compuesta por tres componentes: Middleware REST → JSON-RPC — Expone endpoints REST/JSON con autenticación JWT, traduce las llamadas al protocolo JSON-RPC nativo de Odoo. Módulo deltav_connector — Módulo Odoo 17 con modelos, vistas, controladores HTTP y lógica de sincronización DeltaV ↔ Odoo. Módulo integrador_odoo2delta — Extiende los módulos de Ventas ( sale.order ) y Compras ( purchase.order ) de Odoo 17 para notificar automáticamente al sistema externo (DeltaV) vía API cuando se crean o confirman documentos. Documentación disponible Introducción — Objetivo, alcance y casos de uso Referencia de API REST — Endpoints, parámetros, respuestas y manejo de errores. Diagrama de Secuencia — Flujo completo de interacción entre Sistema Externo → Middleware → Odoo 17 → Mapping DB + notificaciones salientes. Arquitectura Componente Rol 🖥️ Sistema Externo (Deltav) Cliente REST que envía contactos, productos, BoMs y pagos; recibe notificaciones de ventas y compras desde Odoo ⚙️ Middleware Traduce REST a JSON-RPC, mantiene la tabla de mapeo external_ref → odoo_id 🧩 deltav_connector Módulo Odoo 17 — modelos custom, vistas, controladores HTTP y sincronización DeltaV ↔ Odoo 📤 integrador_odoo2delta Módulo Odoo 17 — hooks en sale.order y purchase.order que notifican al sistema externo vía HTTP POST 🗄️ Odoo 17 ERP que recibe y persiste los datos vía JSON-RPC 💾 Mapping DB Base de datos interna del middleware que resuelve IDs externos a IDs de Odoo Entidades soportadas Contactos ( res.partner ) — Clientes y proveedores con contactos hijos Productos ( product.template + product.product ) — Con variantes, atributos, impuestos y proveedores Lista de Materiales ( mrp.bom + mrp.bom.line ) — BoMs con componentes Pagos ( account.payment + account.move ) — Cobros y pagos con conciliación de facturas Flujo de notificaciones Odoo 17 ──→ sale.order confirmado ──→ integrador_odoo2delta ──→ HTTP POST ──→ API DeltaV Odoo 17 ──→ purchase.order confirmado ──→ integrador_odoo2delta ──→ HTTP POST ──→ API DeltaV Orden de carga Contactos Productos Listas de Materiales (BoMs) Pagos Fuentes Especificación original de la API (Gist) Diagrama de secuencia original (Gist)"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Orden de carga",
+    "url": "/integraciones/deltav/#orden-de-carga"
+  },
+  {
+    "page": "Integración Deltav — Odoo 17",
+    "topic": "Resumen",
+    "url": "/integraciones/deltav/#resumen"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "1. Sincronización de contactos",
+    "url": "/integraciones/deltav/introduccion/#1-sincronizaci-n-de-contactos"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "2. Alta de productos con variantes",
+    "url": "/integraciones/deltav/introduccion/#2-alta-de-productos-con-variantes"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "3. Definición de lista de materiales (BoM)",
+    "url": "/integraciones/deltav/introduccion/#3-definici-n-de-lista-de-materiales-bom"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "4. Registro de pagos",
+    "url": "/integraciones/deltav/introduccion/#4-registro-de-pagos"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "5. Notificación de ventas al sistema externo",
+    "url": "/integraciones/deltav/introduccion/#5-notificaci-n-de-ventas-al-sistema-externo"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "6. Notificación de compras al sistema externo",
+    "url": "/integraciones/deltav/introduccion/#6-notificaci-n-de-compras-al-sistema-externo"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Alcance",
+    "url": "/integraciones/deltav/introduccion/#alcance"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Casos de uso",
+    "url": "/integraciones/deltav/introduccion/#casos-de-uso"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Componentes del Proyecto",
+    "url": "/integraciones/deltav/introduccion/#componentes-del-proyecto"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Introducción — Integración Deltav → Odoo 17",
+    "url": "/integraciones/deltav/introduccion/",
+    "text": "Introducción — Integración Deltav → Odoo 17 Objetivo, alcance y casos de uso de la integración entre Deltav y Odoo 17. Objetivo Conectar el sistema externo Deltav con Odoo 17 mediante tres componentes que trabajan en conjunto: Un middleware REST que traduce llamadas a JSON-RPC interno de Odoo. Un módulo Odoo deltav_connector con modelos, vistas y controladores HTTP. Un módulo Odoo integrador_odoo2delta que notifica automáticamente al sistema externo cuando se crean o confirman documentos de venta y compra. Esto permite sincronización bidireccional de entidades de negocio clave sin intervención manual. Componentes del Proyecto Middleware REST (FastAPI) API REST que expone endpoints para que el sistema externo envíe datos a Odoo. Autentica por API Key + JWT, resuelve external_ref → odoo_id vía Mapping DB, y garantiza idempotencia en todas las operaciones de escritura. Módulo deltav_connector Módulo nativo de Odoo 17 que extiende el ERP con: Modelos custom para la configuración y auditoría de la integración Vistas (form, tree, search) y menú de configuración Controladores HTTP y lógica de sincronización DeltaV ↔ Odoo Reglas de seguridad (ACL) y permisos por rol Módulo integrador_odoo2delta Módulo nativo de Odoo 17 que extiende los módulos de Ventas y Compras para notificar automáticamente al sistema externo: Módulo Odoo extendido Evento Acción sale.order create / action_confirm HTTP POST a API externa con payload de venta purchase.order create / button_confirm HTTP POST a API externa con payload de compra Incluye configuración de URL de API externa, reintentos, logging y manejo de errores HTTP. Flujo: Odoo → evento (create/confirm) → hook → HTTP POST → API del sistema externo (DeltaV) Alcance Incluido Fuera de alcance Autenticación por API Key + JWT Single Sign-On (SSO) Upsert de contactos ( res.partner ) Gestión de oportunidades CRM Upsert de productos con variantes ( product.template + product.product ) Pricing avanzado o reglas de precio Upsert de listas de materiales ( mrp.bom + mrp.bom.line ) Planificación de producción (MRP scheduler) Creación y conciliación de pagos ( account.payment ) Facturación electrónica o fiscal Mapeo external_id → odoo_id vía Mapping DB Migración masiva de datos históricos Idempotencia por external_ref en POST Webhooks entrantes hacia Odoo Rate limit de 100 req/min por API Key Multi-tenancy Notificaciones salientes de ventas y compras al sistema externo Sincronización de otros modelos (inventario, contabilidad, etc.) Reintentos automáticos con backoff exponencial en notificaciones salientes Procesamiento de respuestas de negocio del sistema externo Módulo deltav_connector — modelos, vistas, sync, seguridad Modificaciones a otros módulos de Odoo Módulo integrador_odoo2delta — hooks en sale.order y purchase.order Notificaciones de otros documentos (facturas, albaranes, etc.) Casos de uso 1. Sincronización de contactos El sistema externo envía un contacto (empresa o individuo). El middleware lo crea o actualiza en Odoo por external_ref y devuelve el odoo_id mapeado. Flujo: POST /v1/contacts → lookup mapping → upsert res.partner → respuesta con ID 2. Alta de productos con variantes El sistema externo define un producto con atributos (color, talle, etc.). El middleware crea product.template , genera las variantes ( product.product ) y mapea cada una. Flujo: POST /v1/products → crear template → generar variantes → mapear template + variantes 3. Definición de lista de materiales (BoM) El sistema externo envía una BoM con sus componentes. El middleware resuelve las dependencias (productos deben existir) y crea mrp.bom + mrp.bom.line . Flujo: POST /v1/boms → resolver producto y componentes → crear BoM → mapear 4. Registro de pagos El sistema externo informa un pago asociado a facturas de Odoo. El middleware crea account.payment , concilia contra las facturas indicadas y confirma la operación. Flujo: POST /v1/payments → resolver partner + facturas → crear pago → action_post() → respuesta 5. Notificación de ventas al sistema externo Cuando se crea o confirma un sale.order en Odoo, el módulo integrador_odoo2delta envía automáticamente un HTTP POST a la API del sistema externo con los datos de la orden. Flujo: sale.order confirmado → hook integrador_odoo2delta → HTTP POST → API DeltaV → confirmación 6. Notificación de compras al sistema externo Cuando se crea o confirma un purchase.order en Odoo, el módulo integrador_odoo2delta envía automáticamente un HTTP POST a la API del sistema externo con los datos de la orden de compra. Flujo: purchase.order confirmado → hook integrador_odoo2delta → HTTP POST → API DeltaV → confirmación 📄 Ver también: Arquitectura · API Doc"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Middleware REST (FastAPI)",
+    "url": "/integraciones/deltav/introduccion/#middleware-rest-fastapi"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Módulo deltav_connector",
+    "url": "/integraciones/deltav/introduccion/#m-dulo-deltav-connector"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Módulo integrador_odoo2delta",
+    "url": "/integraciones/deltav/introduccion/#m-dulo-integrador-odoo2delta"
+  },
+  {
+    "page": "Introducción — Integración Deltav → Odoo 17",
+    "topic": "Objetivo",
+    "url": "/integraciones/deltav/introduccion/#objetivo"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "3. Sincronización de maestros",
+    "url": "/integraciones/produccion/introduccion/#3-sincronizaci-n-de-maestros"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "4. Consulta de estado",
+    "url": "/integraciones/produccion/introduccion/#4-consulta-de-estado"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Alcance",
+    "url": "/integraciones/produccion/introduccion/#alcance"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Caso A — Demanda por venta",
+    "url": "/integraciones/produccion/introduccion/#caso-a-demanda-por-venta"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Caso B — Producción directa",
+    "url": "/integraciones/produccion/introduccion/#caso-b-producci-n-directa"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Casos de uso",
+    "url": "/integraciones/produccion/introduccion/#casos-de-uso"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Introducción — Integración Odoo Producción",
+    "url": "/integraciones/produccion/introduccion/",
+    "text": "Introducción — Integración Odoo Producción Objetivo, alcance y casos de uso de la API de Integración Odoo Producción v14. Objetivo Conectar un sistema externo de planificación o MES con Odoo para gestionar la demanda de fabricación de extremo a extremo: desde la recepción de una necesidad comercial hasta la ejecución de órdenes de producción, incluyendo la sincronización de maestros compartidos (productos, BOMs, clientes, almacenes). Alcance Incluido Fuera de alcance Recepción de demanda comercial (Caso A) Gestión de inventario completo (WMS) Creación directa de órdenes de fabricación (Caso B) Planificación finita de capacidad Sincronización de maestros primarios: productos y BOMs Contabilidad de costos de producción Sincronización de maestros secundarios: clientes, almacenes, routings Calidad e inspección Consulta de estado de órdenes de producción Mantenimiento de equipos Idempotencia por Idempotency-Key y external_id Migración de datos históricos Autenticación Bearer Token SSO o autenticación federada Resolución de referencias cruzadas por clave externa Integración con otros módulos Odoo (Compras, Contabilidad) Casos de uso Caso A — Demanda por venta El sistema externo informa una demanda comercial (pedido de cliente). La API registra la venta en Odoo, que dispara el flujo de fabricación mediante su motor de reabastecimiento (MTO/MTS). Endpoint: POST /api/v1/case-a/sales-orders Flujo: pedido externo → sale.order → confirmación → reabastecimiento MRP → mrp.production Cuándo usarlo: cuando existe un cliente, un pedido formal y se necesita trazabilidad venta → producción. Caso B — Producción directa El sistema externo actúa como planificador y decide directamente qué fabricar. La API crea la orden de producción en Odoo con los datos de planificación (producto, BOM, cantidad, fechas, routing). Endpoint: POST /api/v1/case-b/manufacturing-orders Flujo: orden externa → mrp.production → confirmación → planificación → work orders Cuándo usarlo: cuando el sistema externo es el planificador maestro (MES/APS) y Odoo ejecuta la fabricación. 3. Sincronización de maestros Antes de operar los casos A o B, los maestros deben estar sincronizados: Maestro Endpoint Obligatorio para Productos POST /master-data/products/upsert Casos A y B Listas de materiales POST /master-data/boms/upsert Casos A y B Clientes POST /master-data/customers/upsert Caso A Almacenes POST /master-data/warehouses/upsert Casos A y B 4. Consulta de estado El sistema externo consulta el estado consolidado de una orden de producción: avance, cantidades producidas, reservas de componentes y work orders pendientes. Endpoint: GET /api/v1/status/production-orders/{external_id} 📄 Ver también: Arquitectura · API Doc"
+  },
+  {
+    "page": "Introducción — Integración Odoo Producción",
+    "topic": "Objetivo",
+    "url": "/integraciones/produccion/introduccion/#objetivo"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Caso A — Demanda por venta",
+    "url": "/integraciones/produccion/#caso-a-demanda-por-venta"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Caso B — Producción directa",
+    "url": "/integraciones/produccion/#caso-b-producci-n-directa"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Casos de integración",
+    "url": "/integraciones/produccion/#casos-de-integraci-n"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Datos clave",
+    "url": "/integraciones/produccion/#datos-clave"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Producción — Integración Odoo",
+    "url": "/integraciones/produccion/",
+    "text": "Producción — Integración Odoo API de Integración Odoo Producción — Especificación funcional y técnica para integrar demanda comercial, fabricación y maestros con Odoo. Resumen Esta integración conecta un sistema externo con Odoo para soportar procesos vinculados al módulo de Producción . Define puntos de entrada, contratos de datos, validaciones y reglas de sincronización necesarias para operar con: Dominio Alcance Ventas Recepción de demanda comercial del sistema externo Producción Órdenes de fabricación directas o derivadas de ventas Maestros Productos, listas de materiales, clientes, almacenes Casos de integración Caso A — Demanda por venta El sistema externo informa una demanda comercial. La API registra la venta y Odoo genera la fabricación mediante su flujo estándar de abastecimiento y MRP. Aplicable cuando existe pedido, cliente y compromiso comercial. Preserva la trazabilidad venta → producción. Caso B — Producción directa El sistema externo decide qué fabricar y la API crea directamente la orden de producción en Odoo. Aplicable cuando el sistema externo actúa como planificador o MES. Permite iniciar fabricación sin depender de una venta previa. Datos clave Elemento Valor Versión v14 Base path /api/v1 Formato JSON UTF-8 Autenticación Bearer Token Idempotencia Idempotency-Key + external_id Secciones Introducción — Objetivo, alcance y casos de uso Arquitectura — Diagramas de secuencia y arquitectura del sistema API Doc — Referencia completa de endpoints, payloads y errores Estimación — Estimación JEO E1: 383 h esperadas, WBS detallada, riesgos y gates"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Resumen",
+    "url": "/integraciones/produccion/#resumen"
+  },
+  {
+    "page": "Producción — Integración Odoo",
+    "topic": "Secciones",
+    "url": "/integraciones/produccion/#secciones"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "1. Integración a través de API REST",
+    "url": "/integraciones/tipos-de-integraciones/#1-integraci-n-a-trav-s-de-api-rest"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "2. Integración con middleware intermediario",
+    "url": "/integraciones/tipos-de-integraciones/#2-integraci-n-con-middleware-intermediario"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "3. Integración a través de XML-RPC",
+    "url": "/integraciones/tipos-de-integraciones/#3-integraci-n-a-trav-s-de-xml-rpc"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Características",
+    "url": "/integraciones/tipos-de-integraciones/#caracter-sticas"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Comparativa final",
+    "url": "/integraciones/tipos-de-integraciones/#comparativa-final"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Componentes del middleware",
+    "url": "/integraciones/tipos-de-integraciones/#componentes-del-middleware"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Flujo de autenticación típico",
+    "url": "/integraciones/tipos-de-integraciones/#flujo-de-autenticaci-n-t-pico"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Flujo de una solicitud a través del middleware",
+    "url": "/integraciones/tipos-de-integraciones/#flujo-de-una-solicitud-a-trav-s-del-middleware"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Híbrido REST + XML-RPC",
+    "url": "/integraciones/tipos-de-integraciones/#h-brido-rest-xml-rpc"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Modelo híbrido: RPC + REST",
+    "url": "/integraciones/tipos-de-integraciones/#modelo-h-brido-rpc-rest"
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Tipos de integraciones — Odoo con sistemas externos",
+    "url": "/integraciones/tipos-de-integraciones/",
+    "text": "Tipos de integraciones — Odoo con sistemas externos Guía de arquitectura. Tres enfoques para conectar Odoo con sistemas externos, desde la conexión directa hasta plataformas de middleware completas. 1. Integración a través de API REST La comunicación se realiza mediante endpoints HTTP con payloads JSON. Puede ser bidireccional: Odoo consume APIs externas y sistemas externos consumen APIs expuestas por Odoo. Operador Odoo Sistema Externo Operador Operador Odoo Odoo Sistema Externo Sistema Externo Odoo consume API externa dispara acción (botón, cron, workflow) GET/POST /api/... {headers, body JSON} 200 OK {data} procesa respuesta actualiza registros Sistema externo consume API Odoo POST /api/v1/... Authorization: Bearer {token} valida token valida payload ejecuta operación (create, write, search) 200 OK {id, status} Características Aspecto Detalle Protocolo HTTP/HTTPS Formato JSON (también XML si se requiere) Autenticación Bearer Token, API Key, OAuth2 Ventaja Simple, estándar, fácil de testear con curl/Postman Limitación Sin cola de mensajes — si un extremo cae, se pierde la llamada Cuándo usarlo Integraciones punto a punto de baja criticidad o con reintentos manejados por el cliente Flujo de autenticación típico Sistema Externo Odoo API Sistema Externo Sistema Externo Odoo API Odoo API POST /api/v1/auth/token {api_key, secret} validar credenciales 200 {access_token, expires_in} GET /api/v1/contacts Authorization: Bearer {token} validar token verificar expiración 200 {data} Renovar token antes de que expire. Usar refresh_token si está disponible. 2. Integración con middleware intermediario Un middleware actúa como capa de abstracción entre Odoo y los sistemas externos. Centraliza autenticación, transformación de datos, encolado de mensajes, reintentos y observabilidad. Middleware Infraestructura API Gateway (Kong / Traefik) Auth Service (JWT / API Key) Redis (caché + colas) Message Queue (RabbitMQ / SQS) Transform Service (Mapping / Enrichment) Mapping DB (external_id → odoo_id) Odoo Adapter (REST → JSON-RPC) Docker Containers Orquestador (k8s / Swarm) Proxy Inverso (NGINX / Traefik) Sistema Externo (ERP, CRM, MES) Odoo Flujo de una solicitud a través del middleware Sistema Externo API Gateway Auth Service Transform Redis Message Odoo Odoo Sistema Externo Sistema Externo API Gateway API Gateway Auth Service Auth Service Transform Service Transform Service Redis Cache Redis Cache Message Queue Message Queue Odoo Adapter Odoo Adapter Odoo Odoo POST /api/v1/orders {external_ref, data} validar token ✅ autorizado forward request GET cache:external_ref alt [Cache hit] odoo_id encontrado [Cache miss] lookup external_ref search_read odoo_id odoo_id SET cache con TTL encolar evento order.created crear/actualizar orden create/write id confirmado resultado respuesta 201 Created {status, id} La cola permite procesamiento asincrónico: notificaciones, webhooks, conciliación nocturna Componentes del middleware Componente Rol Tecnologías típicas API Gateway Punto único de entrada, rate limiting, ruteo Kong, Traefik, NGINX, AWS API Gateway Auth Service Validación de tokens, API Keys, permisos OAuth2, JWT, API Key management Redis Caché de mapeo de IDs, contadores, sesiones Redis, ElastiCache, Memorystore Message Queue Encolado de eventos, reintentos, procesamiento async RabbitMQ, SQS, BullMQ, Kafka Transform Service Traducción de contratos, enrichment, validación Python, Node.js, Go Mapping DB Persistencia external_id → odoo_id por modelo PostgreSQL, MySQL, DynamoDB Odoo Adapter Traducción REST/JSON → JSON-RPC/ORM XML-RPC, OdooRPC, custom Docker Contenedores por servicio Docker, Podman Orquestador Escalado, health checks, despliegues Kubernetes, Docker Swarm, Nomad Proxy inverso TLS termination, balanceo de carga NGINX, Traefik, HAProxy, Caddy Ventajas del middleware Ventaja Explicación Desacoplamiento Ningún sistema conoce los detalles del otro Tolerancia a fallos Colas de mensajes con reintentos y dead-letter Observabilidad Logs, métricas y tracing centralizados Cache Reduce llamadas repetitivas a Odoo Transformación Adapta contratos sin modificar ningún sistema Seguridad Autenticación centralizada, rate limiting, IP whitelisting Escalabilidad Cada servicio escala independientemente 3. Integración a través de XML-RPC Odoo expone nativamente una API XML-RPC sobre HTTP. El sistema externo llama directamente a métodos del ORM de Odoo ( execute_kw ) sin necesidad de endpoints REST personalizados. Sistema Externo Odoo XML-RPC Odoo XML-RPC Odoo DB Sistema Externo Sistema Externo Odoo XML-RPC /common Odoo XML-RPC /common Odoo XML-RPC /object Odoo XML-RPC /object Odoo DB Odoo DB Autenticación authenticate(db, user, password) validar credenciales uid (user id) Operación RPC execute_kw( db, uid, password, 'res.partner', 'search_read', [ 'is_company','=',True ], {{'fields':['name','email']}} ) SELECT name, email FROM res_partner WHERE is_company = true [{id: 42, name: \"Acme\", email: \"...\"}] XML-RPC usa serialización XML sobre HTTP. Más verboso que JSON pero 100% nativo de Odoo — no requiere módulos adicionales. Modelo híbrido: RPC + REST Un patrón común es combinar XML-RPC para operaciones internas del middleware con una API REST hacia el exterior: Sistema Externo API REST Odoo XML-RPC Odoo Sistema Externo Sistema Externo API REST (Middleware) API REST (Middleware) Odoo XML-RPC /object Odoo XML-RPC /object Odoo Odoo POST /api/v1/contacts {name, vat, email} Authorization: Bearer {token} execute_kw( 'res.partner', 'create', [{name, vat, email}] ) crear registro partner_id: 42 execute_kw( 'res.partner', 'write', [[42], {ref: 'EXT-001'}]\\n) actualizar referencia externa ok 201 Created {status: \"created\", odoo_id: 42} Características Aspecto Detalle Protocolo XML-RPC sobre HTTP Formato XML (serialización automática) Endpoints nativos /xmlrpc/common , /xmlrpc/object , /xmlrpc/db Autenticación Usuario + contraseña de Odoo (o API Key en v14+) Métodos execute_kw(model, method, args, kwargs) Ventaja Sin desarrollo en Odoo — acceso total al ORM Limitación Verboso, requiere conocer modelos internos, sin rate limiting nativo Cuándo usarlo Migraciones, scripts, conexiones internas con acceso controlado Híbrido REST + XML-RPC Ventaja Cómo se logra REST para el exterior API REST documentada con Swagger/OpenAPI RPC para Odoo execute_kw en el adaptador — máxima flexibilidad Separación de contratos La API REST define el contrato público; el RPC interno puede cambiar Seguridad Token Bearer en REST, API Key en RPC — doble capa Comparativa final API REST Directa Middleware Intermediario XML-RPC Nativo Simple Estándar Sin colas Encolado Caché Observabilidad Escalable Tolerante a fallos ORM completo Sin desarrollo Híbrido REST evoluciona a puede usar como adaptador Criterio API REST directa Middleware XML-RPC Complejidad inicial Baja Alta Media Tolerancia a fallos ❌ ✅ ❌ Encolado de mensajes ❌ ✅ ❌ Transformación de datos Limitada ✅ Completa Manual Observabilidad Básica ✅ Centralizada Básica Escalabilidad ❌ ✅ ❌ Seguridad centralizada ❌ ✅ ❌ Desarrollo en Odoo Medio Medio Mínimo Ideal para MVPs, baja criticidad Producción, alta disponibilidad Migraciones, scripts 📄 Conclusión: Para integraciones en producción con múltiples sistemas, el middleware intermediario es la arquitectura recomendada. Para scripts puntuales o migraciones, XML-RPC directo es más rápido de implementar. La API REST directa sirve como primer paso antes de evolucionar a una arquitectura con middleware."
+  },
+  {
+    "page": "Tipos de integraciones — Odoo con sistemas externos",
+    "topic": "Ventajas del middleware",
+    "url": "/integraciones/tipos-de-integraciones/#ventajas-del-middleware"
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Hiper(N)productividad",
+    "url": "/hiper-n-productividad/",
+    "text": "Marco conceptual, tecnológico y metodológico de colaboración humano-agente para dirigir, documentar y gestionar iniciativas productivas trazables."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Definición y propósito",
+    "url": "/hiper-n-productividad/#1-definicion",
+    "text": "Mapa público, cockpit operativo, objetivos, roles, permisos, herramientas, evidencia y procesos."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Ciclo de amplificación",
+    "url": "/hiper-n-productividad/#2-ciclo",
+    "text": "Acción humana, amplificación por agentes y recursión del aprendizaje como nuevo contexto."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Pilares de la plataforma",
+    "url": "/hiper-n-productividad/#3-pilares",
+    "text": "Agente personal, swarms, canales colaborativos, Odoo backbone, oficinas virtuales, Config init, cerebro organizacional, métricas y motores de agentes."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Agente personal y configuración",
+    "url": "/hiper-n-productividad/#3-1-agente-personal",
+    "text": "Clon operativo según identidad, rol, estilo, permisos, instrucciones, herramientas, memoria, contexto y límites."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Swarms o equipos de agentes",
+    "url": "/hiper-n-productividad/#3-2-swarms",
+    "text": "Agentes especializados que exploran, planifican, ejecutan, verifican y documentan."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Canales colaborativos y Odoo",
+    "url": "/hiper-n-productividad/#3-3-canales",
+    "text": "Telegram, Slack, WhatsApp y Buzz como interfaces; Odoo como sistema de registro para CRM, proyectos, tareas, documentos, aprobaciones y métricas."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Oficinas virtuales, Config init y cerebro organizacional",
+    "url": "/hiper-n-productividad/#3-5-oficinas",
+    "text": "Representación visual del trabajo, sensado organizacional y contexto compartido para observar y decidir."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Dimensiones de gestión",
+    "url": "/hiper-n-productividad/#4-gestion",
+    "text": "Proyectos, negocios, investigación, capacitación e implementación."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Recorridos de adopción",
+    "url": "/hiper-n-productividad/#5-recorridos",
+    "text": "Idea, implementación, formación y laboratorio; proyectos técnicos, capacitación, investigación y comprensión conceptual."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Públicos y aplicaciones",
+    "url": "/hiper-n-productividad/#6-publicos",
+    "text": "Profesionales, empresas, academia y equipos informáticos."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "De la visión a la operación",
+    "url": "/hiper-n-productividad/#7-operacion",
+    "text": "Soporte de dirección, evidencia, decisiones y cartera de proyectos trazable, evaluable y escalable."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Seguridad",
+    "url": "/hiper-n-productividad/#10-seguridad",
+    "text": "Comunicado para clientes con Odoo administrado por HitoFusion. Revisión continua de servicios externos, procesos internos y herramientas para sostener estabilidad, seguridad y recuperación ante incidentes."
+  },
+  {
+    "page": "Hiper(N)productividad",
+    "topic": "Indisponibilidad del sistema",
+    "url": "/hiper-n-productividad/#10-1-indisponibilidad-del-sistema",
+    "text": "Mensaje para clientes con instancias de Odoo en hosting administrado por HitoFusion. Riesgo operativo, continuidad, recuperación, comunicación de incidentes y soporte por canal habitual."
+  },
+  {
+    "page": "Casos de éxito — Hiper(N)productividad",
+    "topic": "Casos de éxito",
+    "url": "/hiper-n-productividad/casos-de-exito/",
+    "text": "Experiencias de inteligencia artificial aplicada desarrolladas por HitoFusion a través de Jinzo."
+  },
+  {
+    "page": "Colegio de la Magistratura de Santa Fe",
+    "topic": "IA para la práctica judicial",
+    "url": "/hiper-n-productividad/casos-de-exito/colegio-magistratura-santa-fe/",
+    "text": "Ambiente de formación y trabajo con agentes de inteligencia artificial para magistrados. Modalidad híbrida, clases presenciales, asistentes personalizados, equipos multiagente, seguridad, privacidad, trazabilidad y plataforma Jinzo."
+  },
+  {
+    "page": "Colegio de la Magistratura de Santa Fe",
+    "topic": "Evidencia pública y alcance",
+    "url": "/hiper-n-productividad/casos-de-exito/colegio-magistratura-santa-fe/#9-evidencia"
+  },
+  {
+    "page": "Colegio de la Magistratura de Santa Fe",
+    "topic": "Contenidos trabajados",
+    "url": "/hiper-n-productividad/casos-de-exito/colegio-magistratura-santa-fe/#5-contenidos",
+    "text": "Fundamentos de IA, machine learning, NLP, LLM, alucinaciones, sesgos, opacidad, agentes autónomos, sistemas multiagente, enjambres y trabajo humano-agente."
+  },
+  {
+    "page": "Colegio de la Magistratura de Santa Fe",
+    "topic": "Seguridad, privacidad y confidencialidad",
+    "url": "/hiper-n-productividad/casos-de-exito/colegio-magistratura-santa-fe/#5-3-privacidad",
+    "text": "Clasificación de datos, anonimización, información reservada, servicios públicos de IA y nube institucional."
+  },
+  {
+    "page": "Colegio de la Magistratura de Santa Fe",
+    "topic": "Salvaguardas",
+    "url": "/hiper-n-productividad/casos-de-exito/colegio-magistratura-santa-fe/#7-salvaguardas",
+    "text": "Revisión humana, verificación de citas y fallos, confidencialidad, autoridad profesional y autorización de acciones sensibles."
+  },
+  {
+    "page": "CAETI — Universidad Abierta Interamericana",
+    "topic": "Espacio colaborativo Odoo con agentes inteligentes",
+    "url": "/hiper-n-productividad/casos-de-exito/caeti-uai/",
+    "text": "Gestión integral del CAETI Rosario en Odoo con interacción entre agentes de inteligencia artificial y personas bajo la dirección del Dr. Alejandro Roberto Sartorio."
+  },
+  {
+    "page": "CAETI — Universidad Abierta Interamericana",
+    "topic": "Modelo de colaboración humano-agente",
+    "url": "/hiper-n-productividad/casos-de-exito/caeti-uai/#4-modelo-colaboracion",
+    "text": "Objetivos, contexto, herramientas, registros Odoo, revisión humana y autorización de acciones sensibles."
+  },
+  {
+    "page": "CAETI — Universidad Abierta Interamericana",
+    "topic": "Evidencia y alcance documentado",
+    "url": "/hiper-n-productividad/casos-de-exito/caeti-uai/#6-evidencia",
+    "text": "Fuentes oficiales de CAETI y UAI, autoridad de CAETI Rosario y antecedente interno de HitoFusion."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Transformación organizacional integral",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/",
+    "text": "Aplicación interna de inteligencia artificial productiva sobre el stack administrativo y productivo completo de HitoFusion con Odoo, Jinzo, agentes y supervisión humana."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Solución implementada",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#3-solucion",
+    "text": "Canales comunicacionales, agentes personales, equipos de agentes, Odoo, oficinas virtuales, cerebro organizacional y conducción humana."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Capacidades operativas",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#4-capacidades",
+    "text": "Atención al cliente, tickets de primera y segunda instancia, desarrollos, migraciones, proyectos, infraestructura e interacción humano-agente y agente-agente."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Áreas organizacionales",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#5-areas",
+    "text": "Comercial, ventas, finanzas, recursos humanos, proyectos, soporte, desarrollo, infraestructura, mejora continua, inteligencia artificial e Hiperproductividad."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Modelo de interacción humano-agente",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#6-modelo",
+    "text": "Objetivos humanos, agente personal, especialistas, equipos, herramientas, registros, revisión, autorización y aprendizaje recursivo."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Productividad y medición",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#8-medicion",
+    "text": "Tiempo de ciclo, producción, calidad, retrabajo, automatización, costo y trazabilidad para comparar resultados contra una línea de base."
+  },
+  {
+    "page": "HitoFusion — IA productiva de cuarta generación",
+    "topic": "Evidencia y alcance documentado",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-ia-productiva/#9-evidencia",
+    "text": "Antecedente interno de HitoFusion; métricas cuantitativas y estándares externos pendientes de publicación."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Piloto operativo de agentes",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/",
+    "text": "Buzz, Cerebro, Odoo, agentes personales y swarm de especialistas para soporte, tickets, planes diarios y gestión supervisada."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Arquitectura implementada",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#3-arquitectura",
+    "text": "Buzz como espacio colaborativo, Cerebro como coordinador, Odoo como fuente de verdad read-only y artefactos persistentes para trazabilidad."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Swarm especializado de soporte",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#4-swarm",
+    "text": "Intake, Evidencia, Resolución, Comunicación y Revisión en modo SHADOW sin modificar Odoo, clientes, tickets ni código."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Agentes personales",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#5-agentes-personales",
+    "text": "Planes diarios, priorización, especificaciones, delegaciones, aprobaciones, correcciones y trazas bajo control humano."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Flujo operativo de tickets",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#6-flujo",
+    "text": "Identificación, normalización, evidencia autorizada, diagnóstico, borrador, revisión, trazabilidad y decisión humana."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Impacto esperado y validación",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#8-impacto",
+    "text": "Tiempo de análisis, calidad, consistencia, trabajo repetitivo y trazabilidad; beneficios esperados pendientes de medición contra línea de base."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Estado del piloto",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#9-estado",
+    "text": "Buzz publicado, Cerebro activo, swarm SHADOW, agentes personales, gateway Odoo read-only, artefactos persistentes y pruebas controladas."
+  },
+  {
+    "page": "HitoFusion — IA operativa con Buzz y Cerebro",
+    "topic": "Evidencia y alcance documentado",
+    "url": "/hiper-n-productividad/casos-de-exito/hitofusion-buzz-cerebro/#11-evidencia",
+    "text": "El Gist documenta arquitectura, restricciones y estado funcional; las métricas cuantitativas todavía no fueron publicadas."
+  }
+]

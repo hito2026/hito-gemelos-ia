@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=ai-legible&utm_source=comment&utm_medium=referral&utm_id=efda1071-5f24-4e91-b948-eaef84e09358
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="hosting-provider" content="Netlify">
+<meta name="netlify-deploy" content="https://netlify.new/?utm_campaign=ai-legible&amp;utm_source=meta&amp;utm_medium=referral&amp;utm_id=efda1071-5f24-4e91-b948-eaef84e09358">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>API REST de Integración — Deltav → Odoo 17 — Hitofusion Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --c-bg:#ffffff;--c-surface:#f6f8fb;--c-border:#e2e6ec;--c-text:#1a1d23;
+  --c-text2:#545b67;--c-accent:#1a6ff5;--c-accent-h:#1557c4;
+  --c-code-bg:#1c1e26;--c-code-text:#d6daf0;
+  --c-callout-bg:#eef4ff;--c-callout-b:#1a6ff5;
+  --sidebar-w:272px;--header-h:55px;--radius:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;color:var(--c-text);background:var(--c-bg);line-height:1.68;-webkit-font-smoothing:antialiased}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;padding:0 22px;background:var(--c-bg);border-bottom:1px solid var(--c-border);gap:10px}
+header .logo{font-weight:700;font-size:1.05rem;color:var(--c-text);text-decoration:none;display:flex;align-items:center;gap:8px}
+header .logo svg{width:23px;height:23px}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - var(--header-h))}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--c-border);background:var(--c-bg);overflow-y:auto;position:sticky;top:var(--header-h);height:calc(100vh - var(--header-h));padding:20px 14px}
+.content{flex:1;min-width:0;max-width:940px;padding:34px 48px 80px}
+
+/* ── Sidebar nav ── */
+.sidebar ul{list-style:none;padding:0}
+.sidebar li{margin:1px 0}
+.sidebar li>ul{padding-left:12px;margin:2px 0 4px}
+.sidebar a{display:block;padding:6px 10px;border-radius:6px;font-size:.845rem;color:var(--c-text2);text-decoration:none;transition:background .12s,color .12s}
+.sidebar a:hover,.sidebar a:focus{background:var(--c-surface);color:var(--c-text)}
+.sidebar a.active{background:#e8f0fe;color:var(--c-accent);font-weight:500}
+.sidebar .nav-label{padding:4px 10px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--c-text2);opacity:.6;margin-top:2px}
+
+/* ── Collapsible details (pure HTML/CSS, no JS) ── */
+.sidebar details>summary{display:flex;align-items:center;padding:6px 10px 6px 4px;font-size:.845rem;font-weight:500;color:var(--c-text);cursor:pointer;border-radius:6px;user-select:none;list-style:none}
+.sidebar details>summary::-webkit-details-marker{display:none}
+.sidebar details>summary:hover{background:var(--c-surface)}
+.sidebar details>summary::before{
+  content:"";display:inline-block;width:16px;height:16px;margin-right:4px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23545b67' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition:transform .18s;flex-shrink:0;
+}
+.sidebar details[open]>summary::before{transform:rotate(90deg)}
+.sidebar details>summary>a{color:inherit;text-decoration:none;flex:1;font-weight:inherit;font-size:inherit;padding:0;border-radius:0;background:none}
+.sidebar details>summary>a:hover{background:none;text-decoration:none}
+.sidebar details>summary>a.active{color:var(--c-accent);font-weight:500}
+.sidebar details>ul{padding-left:6px;margin-top:1px;border-left:1px solid var(--c-border);margin-left:10px}
+
+/* ── Typography ── */
+h1{font-size:2rem;font-weight:700;letter-spacing:-.015em;margin-bottom:6px}
+h2{font-size:1.38rem;font-weight:600;margin-top:44px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--c-border)}
+h3{font-size:1.12rem;font-weight:600;margin-top:30px;margin-bottom:8px}
+h4{font-size:1rem;font-weight:600;margin-top:22px;margin-bottom:6px}
+p{margin-bottom:14px;color:var(--c-text2)}
+a{color:var(--c-accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:var(--c-text);font-weight:600}
+hr{border:0;border-top:1px solid var(--c-border);margin:34px 0}
+.heading-anchor{opacity:0;font-size:.8em;margin-left:-1.1em;padding-right:.3em;color:var(--c-accent);transition:opacity .15s;text-decoration:none;font-weight:400}
+h1:hover .heading-anchor,h2:hover .heading-anchor,h3:hover .heading-anchor,h4:hover .heading-anchor{opacity:1}
+
+/* ── Code ── */
+code{font-family:"JetBrains Mono","Fira Code",monospace;font-size:.82rem}
+:not(pre)>code{background:var(--c-surface);color:#c92a5c;padding:2px 6px;border-radius:4px;border:1px solid var(--c-border);font-weight:500}
+pre{background:var(--c-code-bg);color:var(--c-code-text);padding:20px 24px;border-radius:var(--radius);overflow-x:auto;margin-bottom:20px;font-size:.8rem;line-height:1.58}
+pre code{background:none;color:inherit;padding:0;border:0;font-weight:400;font-size:inherit}
+
+/* ── Diagrams ── */
+.puml-diagram{text-align:center;margin:24px 0;overflow-x:auto}
+.puml-diagram svg{max-width:100%;height:auto}
+.home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin:28px 0}
+.home-cards hr{grid-column:1/-1;margin:0;opacity:0}
+.home-cards h3{margin:0 0 12px;font-size:1.2rem;display:flex;align-items:center;gap:8px}
+.home-cards p{margin:0 0 14px;color:var(--c-text2);line-height:1.6}
+.home-cards .card{background:var(--c-surface,#fff);border:1px solid var(--c-border);border-radius:var(--radius);padding:24px}
+.home-cards table{margin:0 0 14px;font-size:.88rem}
+.home-cards table td,.home-cards table th{padding:4px 10px}
+.home-cards a:last-child{display:inline-block;font-weight:600}
+
+/* ── Tables ── */
+.table-wrap{overflow-x:auto;margin-bottom:22px;border:1px solid var(--c-border);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:var(--c-surface);font-weight:600;color:var(--c-text);white-space:nowrap}
+td{color:var(--c-text2)}
+tr:last-child td{border-bottom:0}
+
+/* ── Lists ── */
+ul,ol{margin-bottom:16px;padding-left:22px;color:var(--c-text2)}
+li{margin-bottom:4px}li>ul,li>ol{margin-top:4px;margin-bottom:0}
+
+/* ── Blockquote ── */
+blockquote{margin:16px 0 20px;padding:14px 18px;border-radius:var(--radius);border-left:4px solid var(--c-callout-b);background:var(--c-callout-bg)}
+blockquote div{font-size:.88rem;color:var(--c-text)}
+
+/* ── Mobile ── */
+.menu-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--c-text)}
+.menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:98}
+@media(max-width:860px){
+  .menu-btn{display:flex;align-items:center}
+  .sidebar{position:fixed;left:0;top:var(--header-h);z-index:99;transform:translateX(-100%);transition:transform .22s cubic-bezier(.4,0,.2,1);box-shadow:2px 0 16px rgba(0,0,0,.1)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-overlay.show{display:block}
+  .content{padding:24px 18px 60px;max-width:100%}
+  h1{font-size:1.55rem}h2{font-size:1.2rem}
+}
+@media print{.sidebar,.menu-btn,.menu-overlay{display:none}.content{max-width:100%;padding:0}}
+</style>
+<link rel="stylesheet" href="../../../assets/css/brand.css" />
+</head>
+<body>
+<header>
+  <button class="menu-btn" onclick="var s=document.getElementById('sb'),o=document.getElementById('mo');s.classList.toggle('open');o.classList.toggle('show')" aria-label="Menú">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+  </button>
+<a href="../../../" class="logo" aria-label="Hitofusion Docs — Inicio">
+  <img src="../../../assets/images/hitofusion-logo.webp" alt="HitoFusion" width="184" height="32" />
+  <span class="docs-label">Documentación técnica</span>
+</a>
+<div class="site-search" data-site-search role="search">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+  <input id="site-search-input" type="search" placeholder="Buscar temas" autocomplete="off" aria-label="Buscar temas en la documentación" aria-controls="site-search-results" aria-expanded="false" />
+  <kbd aria-hidden="true">/</kbd>
+  <div id="site-search-results" class="search-results" data-search-results role="listbox" hidden></div>
+</div>
+</header>
+<div class="menu-overlay" id="mo" onclick="document.getElementById('sb').classList.remove('open');this.classList.remove('show')"></div>
+<div class="layout">
+  <aside class="sidebar" id="sb">
+    <ul><li><a href='../../../'>Home</a></li>
+<li><details open><summary>Integraciones</summary><ul><li><a href='../../../integraciones/tipos-de-integraciones'>Tipos de integraciones</a></li>
+<li><details open><summary><a href='../../../integraciones/deltav/'>Deltav</a></summary><ul><li><a href='../../../integraciones/deltav/introduccion'>Introducción</a></li>
+<li><a href='../../../integraciones/deltav/diagrama-secuencia'>Arquitectura</a></li>
+<li><a class='active' href='../../../integraciones/deltav/api-rest'>API Doc</a></li>
+<li><a href='../../../integraciones/deltav/estimacion-mvp-contactos'>Estimación MVP Contactos</a></li></ul></details></li>
+<li><details open><summary><a href='../../../integraciones/produccion/'>Producción</a></summary><ul><li><a href='../../../integraciones/produccion/introduccion'>Introducción</a></li>
+<li><a href='../../../integraciones/produccion/arquitectura'>Arquitectura</a></li>
+<li><a href='../../../integraciones/produccion/api-doc'>API Doc</a></li>
+<li><a href='../../../integraciones/produccion/estimacion'>Estimación</a></li></ul></details></li>
+<li><a href='../../../integraciones/tipos-de-integraciones'>Tipos de integraciones</a></li></ul></details></li>
+<li><details open><summary>Infraestructura</summary><ul><li><details open><summary><a href='https://hito2026.github.io/documentation/infraestructura/instalacion-odoo-local/'>Instalación Odoo Local</a></summary><ul><li><a href='https://hito2026.github.io/documentation/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/'>Dimensionamiento 100 User</a></li></ul></details></li>
+<li><details open><summary>Alta disponibilidad</summary><ul><li><a href='https://hito2026.github.io/documentation/infraestructura/alta-disponibilidad/caso-onecloud/'>Caso OneCloud</a></li></ul></details></li></ul></details></li></ul>
+  </aside>
+  <main class="content">
+    <h1 id="api-rest-de-integraci-n-deltav-odoo-17"><a class="heading-anchor" href="#api-rest-de-integraci-n-deltav-odoo-17">#</a>API REST de Integración — Deltav → Odoo 17</h1>
+<blockquote><div><strong>Versión:</strong> 1.0 — Julio 2026<br><strong>Base URL:</strong> <code>https://api-integracion.mi-empresa.com/v1</code><br><strong>Protocolo:</strong> REST/JSON sobre HTTPS<br><strong>Autenticación:</strong> Bearer Token (JWT) obtenido con API Key de Odoo</div></blockquote>
+<hr>
+<h2 id="1-autenticaci-n"><a class="heading-anchor" href="#1-autenticaci-n">#</a>1. Autenticación</h2>
+<p>El sistema externo debe autenticarse con la API Key de Odoo para obtener un token JWT de corta duración.</p>
+<p><code>POST /v1/auth/token</code></p>
+<p><strong>Request:</strong></p>
+<pre class="language-json"><code>{
+  &quot;api_key&quot;: &quot;a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;
+}</code></pre>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;access_token&quot;: &quot;eyJhbGciOiJIUzI1NiIs...&quot;,
+  &quot;token_type&quot;: &quot;bearer&quot;,
+  &quot;expires_in&quot;: 3600,
+  &quot;odoo_uid&quot;: 7
+}</code></pre>
+<p><strong>Uso en llamadas subsiguientes:</strong></p>
+<pre><code>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</code></pre>
+<p><strong>Errores de autenticación:</strong></p>
+<div class="table-wrap"><table><tr><th>Status</th><th>Code</th><th>Descripción</th></tr><tr><td>401</td><td>AUTHENTICATION_ERROR</td><td>API Key inválida o expirada</td></tr><tr><td>401</td><td>TOKEN_EXPIRED</td><td>El JWT expiró, re-autenticar</td></tr></table></div>
+<hr>
+<h2 id="2-convenciones"><a class="heading-anchor" href="#2-convenciones">#</a>2. Convenciones</h2>
+<div class="table-wrap"><table><tr><th>Regla</th><th>Detalle</th></tr><tr><td>Content-Type</td><td>Todas las requests y responses usan application/json</td></tr><tr><td>Fechas</td><td>ISO 8601: &quot;2026-07-02T15:30:00Z&quot; (datetime) o &quot;2026-07-02&quot; (date)</td></tr><tr><td>IDs externos</td><td>external_ref es un string alfanumérico (máx. 255 chars) que identifica de forma única y estable a cada entidad en el sistema externo</td></tr><tr><td>Monedas</td><td>Se usa el ID de res.currency en Odoo (ej. 2 = USD, 3 = EUR, 21 = ARS)</td></tr><tr><td>Países</td><td>Código ISO 3166-1 alpha-2: &quot;US&quot;, &quot;AR&quot;, &quot;ES&quot;, etc.</td></tr><tr><td>POST es upsert</td><td>Si el external_ref ya existe → se actualiza el registro. Si no → se crea</td></tr><tr><td>Campos no enviados</td><td>No se modifican en Odoo (merge parcial)</td></tr><tr><td>Orden de carga</td><td>1º Contactos → 2º Productos → 3º BoMs → 4º Pagos</td></tr></table></div>
+<hr>
+<h2 id="3-endpoints"><a class="heading-anchor" href="#3-endpoints">#</a>3. Endpoints</h2>
+<h3 id="3-1-health-check"><a class="heading-anchor" href="#3-1-health-check">#</a>3.1 Health Check</h3>
+<p><code>GET /v1/health</code></p>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;healthy&quot;,
+  &quot;odoo_version&quot;: &quot;17.0&quot;,
+  &quot;odoo_connected&quot;: true,
+  &quot;timestamp&quot;: &quot;2026-07-02T17:00:00Z&quot;
+}</code></pre>
+<h3 id="3-2-contactos"><a class="heading-anchor" href="#3-2-contactos">#</a>3.2 Contactos</h3>
+<p>Modelo Odoo: res.partner</p>
+<h4 id="crear-o-actualizar"><a class="heading-anchor" href="#crear-o-actualizar">#</a>Crear o Actualizar</h4>
+<p><code>POST /v1/contacts</code></p>
+<p><strong>Request Body:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+  &quot;name&quot;: &quot;Acme Corporation&quot;,
+  &quot;is_company&quot;: true,
+  &quot;vat&quot;: &quot;US123456789&quot;,
+  &quot;email&quot;: &quot;info@acme.com&quot;,
+  &quot;phone&quot;: &quot;+1-555-0100&quot;,
+  &quot;mobile&quot;: &quot;+1-555-0101&quot;,
+  &quot;website&quot;: &quot;https://acme.com&quot;,
+  &quot;street&quot;: &quot;123 Main St&quot;,
+  &quot;street2&quot;: &quot;Suite 400&quot;,
+  &quot;city&quot;: &quot;San Francisco&quot;,
+  &quot;state&quot;: &quot;California&quot;,
+  &quot;zip&quot;: &quot;94105&quot;,
+  &quot;country_code&quot;: &quot;US&quot;,
+  &quot;is_customer&quot;: true,
+  &quot;is_supplier&quot;: false,
+  &quot;payment_term&quot;: &quot;immediate&quot;,
+  &quot;contacts&quot;: [
+    {
+      &quot;name&quot;: &quot;John Doe&quot;,
+      &quot;email&quot;: &quot;john@acme.com&quot;,
+      &quot;phone&quot;: &quot;+1-555-0200&quot;,
+      &quot;position&quot;: &quot;CFO&quot;
+    }
+  ],
+  &quot;tags&quot;: [&quot;enterprise&quot;, &quot;premium&quot;]
+}</code></pre>
+<p><strong>Parámetros:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Default</th><th>Descripción</th></tr><tr><td>external_ref</td><td>string (max 255)</td><td>✅</td><td>—</td><td>ID único del sistema externo</td></tr><tr><td>name</td><td>string</td><td>✅</td><td>—</td><td>Nombre o razón social</td></tr><tr><td>is_company</td><td>boolean</td><td>❌</td><td>false</td><td>true si es empresa</td></tr><tr><td>vat</td><td>string</td><td>❌</td><td>—</td><td>Nº de identificación fiscal</td></tr><tr><td>email</td><td>string</td><td>❌</td><td>—</td><td>Email principal</td></tr><tr><td>phone</td><td>string</td><td>❌</td><td>—</td><td>Teléfono fijo</td></tr><tr><td>mobile</td><td>string</td><td>❌</td><td>—</td><td>Teléfono móvil</td></tr><tr><td>website</td><td>string</td><td>❌</td><td>—</td><td>URL del sitio web</td></tr><tr><td>street</td><td>string</td><td>❌</td><td>—</td><td>Dirección (calle y número)</td></tr><tr><td>street2</td><td>string</td><td>❌</td><td>—</td><td>Complemento de dirección</td></tr><tr><td>city</td><td>string</td><td>❌</td><td>—</td><td>Ciudad</td></tr><tr><td>state</td><td>string</td><td>❌</td><td>—</td><td>Provincia / Estado</td></tr><tr><td>zip</td><td>string</td><td>❌</td><td>—</td><td>Código postal</td></tr><tr><td>country_code</td><td>string (ISO 2)</td><td>❌</td><td>—</td><td>Código de país (&quot;US&quot;, &quot;AR&quot;)</td></tr><tr><td>is_customer</td><td>boolean</td><td>❌</td><td>false</td><td>Marca como cliente</td></tr><tr><td>is_supplier</td><td>boolean</td><td>❌</td><td>false</td><td>Marca como proveedor</td></tr><tr><td>payment_term</td><td>string</td><td>❌</td><td>—</td><td>&quot;immediate&quot;, &quot;net_15&quot;, &quot;net_30&quot;, &quot;net_60&quot;</td></tr><tr><td>contacts</td><td>array</td><td>❌</td><td>—</td><td>Contactos hijos (personas asociadas)</td></tr><tr><td>contacts[].name</td><td>string</td><td>✅ (si se envía)</td><td>—</td><td>Nombre del contacto</td></tr><tr><td>contacts[].email</td><td>string</td><td>❌</td><td>—</td><td>Email del contacto</td></tr><tr><td>contacts[].phone</td><td>string</td><td>❌</td><td>—</td><td>Teléfono</td></tr><tr><td>contacts[].position</td><td>string</td><td>❌</td><td>—</td><td>Cargo / función</td></tr><tr><td>tags</td><td>array of string</td><td>❌</td><td>—</td><td>Etiquetas / categorías</td></tr></table></div>
+<p><strong>Response 201 Created:</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;created&quot;,
+  &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+  &quot;odoo_id&quot;: 42,
+  &quot;name&quot;: &quot;Acme Corporation&quot;,
+  &quot;created_at&quot;: &quot;2026-07-02T17:00:00Z&quot;
+}</code></pre>
+<p><strong>Response 200 OK (actualización):</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;updated&quot;,
+  &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+  &quot;odoo_id&quot;: 42,
+  &quot;name&quot;: &quot;Acme Corporation&quot;,
+  &quot;updated_at&quot;: &quot;2026-07-02T17:05:00Z&quot;
+}</code></pre>
+<h4 id="consultar-contacto"><a class="heading-anchor" href="#consultar-contacto">#</a>Consultar Contacto</h4>
+<p><code>GET /v1/contacts/{external_ref}</code></p>
+<p><strong>Parámetros de búsqueda (query string):</strong></p>
+<div class="table-wrap"><table><tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr><tr><td>search</td><td>string</td><td>Búsqueda por nombre (ilike)</td></tr><tr><td>is_customer</td><td>boolean</td><td>Filtrar clientes</td></tr><tr><td>is_supplier</td><td>boolean</td><td>Filtrar proveedores</td></tr><tr><td>country_code</td><td>string</td><td>Filtrar por país</td></tr><tr><td>limit</td><td>integer</td><td>Máx. resultados (default: 20)</td></tr><tr><td>offset</td><td>integer</td><td>Paginación (default: 0)</td></tr></table></div>
+<p>Ejemplo: GET /v1/contacts?search=Acme&amp;is_customer=true&amp;limit=20</p>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+  &quot;odoo_id&quot;: 42,
+  &quot;name&quot;: &quot;Acme Corporation&quot;,
+  &quot;is_company&quot;: true,
+  &quot;vat&quot;: &quot;US123456789&quot;,
+  &quot;email&quot;: &quot;info@acme.com&quot;,
+  &quot;phone&quot;: &quot;+1-555-0100&quot;,
+  &quot;mobile&quot;: &quot;+1-555-0101&quot;,
+  &quot;website&quot;: &quot;https://acme.com&quot;,
+  &quot;street&quot;: &quot;123 Main St&quot;,
+  &quot;street2&quot;: &quot;Suite 400&quot;,
+  &quot;city&quot;: &quot;San Francisco&quot;,
+  &quot;state&quot;: &quot;California&quot;,
+  &quot;zip&quot;: &quot;94105&quot;,
+  &quot;country&quot;: &quot;United States&quot;,
+  &quot;country_code&quot;: &quot;US&quot;,
+  &quot;is_customer&quot;: true,
+  &quot;is_supplier&quot;: false,
+  &quot;payment_term&quot;: &quot;immediate&quot;,
+  &quot;contacts&quot;: [
+    {
+      &quot;odoo_id&quot;: 43,
+      &quot;name&quot;: &quot;John Doe&quot;,
+      &quot;email&quot;: &quot;john@acme.com&quot;,
+      &quot;phone&quot;: &quot;+1-555-0200&quot;,
+      &quot;position&quot;: &quot;CFO&quot;
+    }
+  ],
+  &quot;tags&quot;: [&quot;enterprise&quot;, &quot;premium&quot;]
+}</code></pre>
+<p><strong>Errores específicos:</strong></p>
+<div class="table-wrap"><table><tr><th>Status</th><th>Code</th><th>Caso</th></tr><tr><td>404</td><td>NOT_FOUND</td><td>external_ref no existe</td></tr><tr><td>400</td><td>VALIDATION_ERROR</td><td>Falta name o external_ref</td></tr><tr><td>400</td><td>INVALID_COUNTRY</td><td>country_code no es un código ISO-2 válido</td></tr></table></div>
+<h3 id="3-3-productos"><a class="heading-anchor" href="#3-3-productos">#</a>3.3 Productos</h3>
+<p>Modelos Odoo: product.template + product.product</p>
+<h4 id="crear-o-actualizar"><a class="heading-anchor" href="#crear-o-actualizar">#</a>Crear o Actualizar</h4>
+<p><code>POST /v1/products</code></p>
+<p><strong>Request Body (producto simple):</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+  &quot;name&quot;: &quot;Laptop Pro 15\&quot;&quot;,
+  &quot;default_code&quot;: &quot;LP15-2026&quot;,
+  &quot;barcode&quot;: &quot;1234567890123&quot;,
+  &quot;type&quot;: &quot;product&quot;,
+  &quot;list_price&quot;: 1299.99,
+  &quot;standard_price&quot;: 850.00,
+  &quot;currency_id&quot;: 2,
+  &quot;uom_id&quot;: 1,
+  &quot;uom_po_id&quot;: 1,
+  &quot;description&quot;: &quot;Laptop profesional 15 pulgadas, 16GB RAM, 512GB SSD&quot;,
+  &quot;description_purchase&quot;: &quot;Laptop Pro 15\&quot; — pedido mayorista&quot;,
+  &quot;sale_ok&quot;: true,
+  &quot;purchase_ok&quot;: true,
+  &quot;active&quot;: true,
+  &quot;categ_id&quot;: &quot;Laptops&quot;,
+  &quot;taxes_id&quot;: [&quot;15% VAT&quot;],
+  &quot;supplier_taxes_id&quot;: [&quot;15% VAT&quot;],
+  &quot;weight&quot;: 1.8,
+  &quot;volume&quot;: 0.005
+}</code></pre>
+<p><strong>Request Body (producto con variantes):</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PROD-002&quot;,
+  &quot;name&quot;: &quot;Camiseta Algodón Premium&quot;,
+  &quot;default_code&quot;: &quot;TSH-PRM&quot;,
+  &quot;type&quot;: &quot;product&quot;,
+  &quot;list_price&quot;: 29.99,
+  &quot;attributes&quot;: [
+    { &quot;name&quot;: &quot;Talle&quot;, &quot;values&quot;: [&quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;] },
+    { &quot;name&quot;: &quot;Color&quot;, &quot;values&quot;: [&quot;Negro&quot;, &quot;Blanco&quot;, &quot;Azul&quot;] }
+  ]
+}</code></pre>
+<p><strong>Parámetros:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Default</th><th>Descripción</th></tr><tr><td>external_ref</td><td>string (max 255)</td><td>✅</td><td>—</td><td>ID único del sistema externo</td></tr><tr><td>name</td><td>string</td><td>✅</td><td>—</td><td>Nombre del producto</td></tr><tr><td>default_code</td><td>string</td><td>❌</td><td>—</td><td>SKU / referencia interna</td></tr><tr><td>barcode</td><td>string</td><td>❌</td><td>—</td><td>Código de barras (EAN13/UPC)</td></tr><tr><td>type</td><td>string</td><td>❌</td><td>&quot;product&quot;</td><td>&quot;product&quot; (stockable), &quot;consu&quot; (consumible), &quot;service&quot;</td></tr><tr><td>list_price</td><td>number</td><td>❌</td><td>0.00</td><td>Precio de venta</td></tr><tr><td>standard_price</td><td>number</td><td>❌</td><td>0.00</td><td>Costo estándar</td></tr><tr><td>currency_id</td><td>integer</td><td>❌</td><td>moneda cia.</td><td>ID de moneda en Odoo</td></tr><tr><td>uom_id</td><td>integer</td><td>❌</td><td>1 (Unidades)</td><td>Unidad de medida de venta</td></tr><tr><td>uom_po_id</td><td>integer</td><td>❌</td><td>1 (Unidades)</td><td>Unidad de medida de compra</td></tr><tr><td>description</td><td>string</td><td>❌</td><td>—</td><td>Descripción para ventas</td></tr><tr><td>description_purchase</td><td>string</td><td>❌</td><td>—</td><td>Descripción para compras</td></tr><tr><td>sale_ok</td><td>boolean</td><td>❌</td><td>true</td><td>Habilitado para venta</td></tr><tr><td>purchase_ok</td><td>boolean</td><td>❌</td><td>true</td><td>Habilitado para compra</td></tr><tr><td>active</td><td>boolean</td><td>❌</td><td>true</td><td>Producto activo</td></tr><tr><td>categ_id</td><td>string</td><td>❌</td><td>—</td><td>Categoría (se busca o crea por nombre)</td></tr><tr><td>taxes_id</td><td>array of string</td><td>❌</td><td>—</td><td>Impuestos de venta (por nombre)</td></tr><tr><td>supplier_taxes_id</td><td>array of string</td><td>❌</td><td>—</td><td>Impuestos de compra (por nombre)</td></tr><tr><td>weight</td><td>number</td><td>❌</td><td>—</td><td>Peso en kg</td></tr><tr><td>volume</td><td>number</td><td>❌</td><td>—</td><td>Volumen en m³</td></tr><tr><td>attributes</td><td>array</td><td>❌</td><td>—</td><td>Atributos para generar variantes</td></tr><tr><td>attributes[].name</td><td>string</td><td>✅ (si se envía)</td><td>—</td><td>Nombre del atributo (ej. &quot;Color&quot;)</td></tr><tr><td>attributes[].values</td><td>array of string</td><td>✅ (si se envía)</td><td>—</td><td>Valores del atributo</td></tr><tr><td>suppliers</td><td>array</td><td>❌</td><td>—</td><td>Información de proveedores</td></tr><tr><td>suppliers[].partner_external_ref</td><td>string</td><td>✅ (si se envía)</td><td>—</td><td>external_ref del proveedor</td></tr><tr><td>suppliers[].price</td><td>number</td><td>✅ (si se envía)</td><td>—</td><td>Precio de compra</td></tr><tr><td>suppliers[].min_qty</td><td>number</td><td>❌</td><td>0</td><td>Cantidad mínima</td></tr><tr><td>suppliers[].delay</td><td>integer</td><td>❌</td><td>0</td><td>Días de entrega</td></tr></table></div>
+<p><strong>Response 201 Created (con variantes):</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;created&quot;,
+  &quot;external_ref&quot;: &quot;EXT-PROD-002&quot;,
+  &quot;odoo_template_id&quot;: 16,
+  &quot;default_code&quot;: &quot;TSH-PRM&quot;,
+  &quot;name&quot;: &quot;Camiseta Algodón Premium&quot;,
+  &quot;variants&quot;: [
+    { &quot;odoo_id&quot;: 40, &quot;name&quot;: &quot;Camiseta Algodón Premium (S, Negro)&quot;, &quot;default_code&quot;: &quot;TSH-PRM-S-NEG&quot; },
+    { &quot;odoo_id&quot;: 41, &quot;name&quot;: &quot;Camiseta Algodón Premium (S, Blanco)&quot;, &quot;default_code&quot;: &quot;TSH-PRM-S-BCO&quot; }
+  ],
+  &quot;variants_count&quot;: 12,
+  &quot;created_at&quot;: &quot;2026-07-02T17:00:00Z&quot;
+}</code></pre>
+<p><strong>Response 200 OK (actualización):</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;updated&quot;,
+  &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+  &quot;odoo_template_id&quot;: 15,
+  &quot;updated_at&quot;: &quot;2026-07-02T17:05:00Z&quot;
+}</code></pre>
+<h4 id="consultar-producto"><a class="heading-anchor" href="#consultar-producto">#</a>Consultar Producto</h4>
+<p><code>GET /v1/products/{external_ref}</code></p>
+<p><strong>Parámetros de búsqueda:</strong></p>
+<div class="table-wrap"><table><tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr><tr><td>search</td><td>string</td><td>Búsqueda por nombre o SKU</td></tr><tr><td>type</td><td>string</td><td>&quot;product&quot;, &quot;consu&quot;, &quot;service&quot;</td></tr><tr><td>categ_id</td><td>string</td><td>Filtrar por categoría</td></tr><tr><td>active</td><td>boolean</td><td>Solo activos/inactivos</td></tr><tr><td>limit</td><td>integer</td><td>Default: 20</td></tr><tr><td>offset</td><td>integer</td><td>Default: 0</td></tr></table></div>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+  &quot;odoo_template_id&quot;: 15,
+  &quot;name&quot;: &quot;Laptop Pro 15\&quot;&quot;,
+  &quot;default_code&quot;: &quot;LP15-2026&quot;,
+  &quot;barcode&quot;: &quot;1234567890123&quot;,
+  &quot;type&quot;: &quot;product&quot;,
+  &quot;list_price&quot;: 1299.99,
+  &quot;standard_price&quot;: 850.00,
+  &quot;currency&quot;: { &quot;id&quot;: 2, &quot;name&quot;: &quot;USD&quot; },
+  &quot;uom&quot;: { &quot;id&quot;: 1, &quot;name&quot;: &quot;Units&quot; },
+  &quot;categ&quot;: { &quot;id&quot;: 5, &quot;name&quot;: &quot;Laptops&quot; },
+  &quot;description&quot;: &quot;Laptop profesional 15 pulgadas, 16GB RAM, 512GB SSD&quot;,
+  &quot;sale_ok&quot;: true,
+  &quot;purchase_ok&quot;: true,
+  &quot;active&quot;: true,
+  &quot;taxes&quot;: [{ &quot;id&quot;: 1, &quot;name&quot;: &quot;15% VAT&quot; }],
+  &quot;weight&quot;: 1.8,
+  &quot;volume&quot;: 0.005,
+  &quot;qty_available&quot;: 45,
+  &quot;virtual_available&quot;: 30,
+  &quot;variants&quot;: [
+    {
+      &quot;odoo_id&quot;: 30,
+      &quot;default_code&quot;: &quot;LP15-SLV-16&quot;,
+      &quot;name&quot;: &quot;Laptop Pro 15\&quot; (Silver, 16GB)&quot;,
+      &quot;attributes&quot;: { &quot;Color&quot;: &quot;Silver&quot;, &quot;RAM&quot;: &quot;16GB&quot; },
+      &quot;qty_available&quot;: 12
+    }
+  ],
+  &quot;suppliers&quot;: [
+    {
+      &quot;partner_external_ref&quot;: &quot;EXT-SUP-001&quot;,
+      &quot;partner_name&quot;: &quot;TechDistributors Inc&quot;,
+      &quot;price&quot;: 780.00,
+      &quot;min_qty&quot;: 10,
+      &quot;delay&quot;: 5
+    }
+  ]
+}</code></pre>
+<p><strong>Errores específicos:</strong></p>
+<div class="table-wrap"><table><tr><th>Status</th><th>Code</th><th>Caso</th></tr><tr><td>404</td><td>NOT_FOUND</td><td>external_ref no existe</td></tr><tr><td>400</td><td>VALIDATION_ERROR</td><td>Falta name o external_ref</td></tr><tr><td>400</td><td>INVALID_TYPE</td><td>type no es válido</td></tr><tr><td>400</td><td>DUPLICATE_SKU</td><td>default_code ya existe en otro producto</td></tr></table></div>
+<h3 id="3-4-lista-de-materiales-bom"><a class="heading-anchor" href="#3-4-lista-de-materiales-bom">#</a>3.4 Lista de Materiales (BoM)</h3>
+<p>Modelos Odoo: mrp.bom + mrp.bom.line</p>
+<h4 id="crear-o-actualizar"><a class="heading-anchor" href="#crear-o-actualizar">#</a>Crear o Actualizar</h4>
+<p><code>POST /v1/boms</code></p>
+<p><strong>Request Body:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-BOM-001&quot;,
+  &quot;code&quot;: &quot;BOM-LP15-001&quot;,
+  &quot;product_external_ref&quot;: &quot;EXT-PROD-001&quot;,
+  &quot;product_qty&quot;: 1.0,
+  &quot;product_uom_id&quot;: 1,
+  &quot;type&quot;: &quot;normal&quot;,
+  &quot;active&quot;: true,
+  &quot;lines&quot;: [
+    {
+      &quot;product_external_ref&quot;: &quot;EXT-PROD-002&quot;,
+      &quot;product_qty&quot;: 1.0,
+      &quot;product_uom_id&quot;: 1
+    },
+    {
+      &quot;product_external_ref&quot;: &quot;EXT-PROD-003&quot;,
+      &quot;product_qty&quot;: 2.0,
+      &quot;product_uom_id&quot;: 1
+    },
+    {
+      &quot;product_external_ref&quot;: &quot;EXT-PROD-004&quot;,
+      &quot;product_qty&quot;: 0.05,
+      &quot;product_uom_id&quot;: 5
+    }
+  ]
+}</code></pre>
+<p><strong>Parámetros:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Default</th><th>Descripción</th></tr><tr><td>external_ref</td><td>string (max 255)</td><td>✅</td><td>—</td><td>ID único del sistema externo</td></tr><tr><td>code</td><td>string</td><td>❌</td><td>—</td><td>Código de referencia de la BoM</td></tr><tr><td>product_external_ref</td><td>string</td><td>✅</td><td>—</td><td>external_ref del producto terminado</td></tr><tr><td>product_qty</td><td>number</td><td>✅</td><td>—</td><td>Cantidad producida por esta BoM</td></tr><tr><td>product_uom_id</td><td>integer</td><td>❌</td><td>1 (Unidades)</td><td>Unidad de medida del producto terminado</td></tr><tr><td>type</td><td>string</td><td>❌</td><td>&quot;normal&quot;</td><td>&quot;normal&quot;, &quot;phantom&quot; (kit virtual), &quot;subcontracting&quot;</td></tr><tr><td>active</td><td>boolean</td><td>❌</td><td>true</td><td>BoM activa</td></tr><tr><td>lines</td><td>array</td><td>✅</td><td>—</td><td>Componentes de la BoM</td></tr><tr><td>lines[].product_external_ref</td><td>string</td><td>✅</td><td>—</td><td>external_ref del componente</td></tr><tr><td>lines[].product_qty</td><td>number</td><td>✅</td><td>—</td><td>Cantidad necesaria</td></tr><tr><td>lines[].product_uom_id</td><td>integer</td><td>❌</td><td>1 (Unidades)</td><td>Unidad de medida del componente</td></tr></table></div>
+<blockquote><div>Nota: Las líneas de BoM en Odoo 17 referencian product.product (variante), no product.template. El middleware resuelve automáticamente a la variante por defecto del componente.</div></blockquote>
+<p><strong>Response 201 Created:</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;created&quot;,
+  &quot;external_ref&quot;: &quot;EXT-BOM-001&quot;,
+  &quot;odoo_id&quot;: 8,
+  &quot;code&quot;: &quot;BOM-LP15-001&quot;,
+  &quot;product&quot;: {
+    &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+    &quot;name&quot;: &quot;Laptop Pro 15\&quot;&quot;
+  },
+  &quot;product_qty&quot;: 1.0,
+  &quot;type&quot;: &quot;normal&quot;,
+  &quot;lines_count&quot;: 3,
+  &quot;created_at&quot;: &quot;2026-07-02T17:00:00Z&quot;
+}</code></pre>
+<h4 id="consultar-bom"><a class="heading-anchor" href="#consultar-bom">#</a>Consultar BoM</h4>
+<p><code>GET /v1/boms/{external_ref}</code></p>
+<p><strong>Parámetros de búsqueda:</strong></p>
+<div class="table-wrap"><table><tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr><tr><td>product_external_ref</td><td>string</td><td>Filtrar por producto terminado</td></tr><tr><td>type</td><td>string</td><td>&quot;normal&quot;, &quot;phantom&quot;, &quot;subcontracting&quot;</td></tr><tr><td>active</td><td>boolean</td><td>Solo activas/inactivas</td></tr></table></div>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-BOM-001&quot;,
+  &quot;odoo_id&quot;: 8,
+  &quot;code&quot;: &quot;BOM-LP15-001&quot;,
+  &quot;product&quot;: {
+    &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+    &quot;odoo_id&quot;: 15,
+    &quot;name&quot;: &quot;Laptop Pro 15\&quot;&quot;
+  },
+  &quot;product_qty&quot;: 1.0,
+  &quot;product_uom&quot;: { &quot;id&quot;: 1, &quot;name&quot;: &quot;Units&quot; },
+  &quot;type&quot;: &quot;normal&quot;,
+  &quot;active&quot;: true,
+  &quot;lines&quot;: [
+    {
+      &quot;odoo_id&quot;: 51,
+      &quot;product&quot;: { &quot;external_ref&quot;: &quot;EXT-PROD-002&quot;, &quot;name&quot;: &quot;Pantalla 15\&quot; IPS&quot; },
+      &quot;product_qty&quot;: 1.0,
+      &quot;product_uom&quot;: { &quot;id&quot;: 1, &quot;name&quot;: &quot;Units&quot; }
+    },
+    {
+      &quot;odoo_id&quot;: 52,
+      &quot;product&quot;: { &quot;external_ref&quot;: &quot;EXT-PROD-003&quot;, &quot;name&quot;: &quot;Módulo RAM 16GB DDR5&quot; },
+      &quot;product_qty&quot;: 2.0,
+      &quot;product_uom&quot;: { &quot;id&quot;: 1, &quot;name&quot;: &quot;Units&quot; }
+    },
+    {
+      &quot;odoo_id&quot;: 53,
+      &quot;product&quot;: { &quot;external_ref&quot;: &quot;EXT-PROD-004&quot;, &quot;name&quot;: &quot;Pasta Térmica Arctic MX-6&quot; },
+      &quot;product_qty&quot;: 0.05,
+      &quot;product_uom&quot;: { &quot;id&quot;: 5, &quot;name&quot;: &quot;kg&quot; }
+    }
+  ]
+}</code></pre>
+<p><strong>Errores específicos:</strong></p>
+<div class="table-wrap"><table><tr><th>Status</th><th>Code</th><th>Caso</th></tr><tr><td>404</td><td>NOT_FOUND</td><td>external_ref no existe</td></tr><tr><td>400</td><td>DEPENDENCY_NOT_FOUND</td><td>El product_external_ref o un componente no existe</td></tr><tr><td>400</td><td>VALIDATION_ERROR</td><td>product_qty ≤ 0 o lines vacío</td></tr><tr><td>400</td><td>DUPLICATE_BOM</td><td>Ya existe una BoM para ese producto con ese code</td></tr></table></div>
+<h3 id="3-5-pagos"><a class="heading-anchor" href="#3-5-pagos">#</a>3.5 Pagos</h3>
+<p>Modelos Odoo: account.payment + account.move</p>
+<h4 id="registrar-pago"><a class="heading-anchor" href="#registrar-pago">#</a>Registrar Pago</h4>
+<p><code>POST /v1/payments</code></p>
+<p><strong>Request Body — Cobro de cliente (inbound):</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PAY-001&quot;,
+  &quot;payment_type&quot;: &quot;inbound&quot;,
+  &quot;partner_type&quot;: &quot;customer&quot;,
+  &quot;partner_external_ref&quot;: &quot;EXT-CUST-001&quot;,
+  &quot;amount&quot;: 2599.98,
+  &quot;currency_id&quot;: 2,
+  &quot;payment_date&quot;: &quot;2026-07-02&quot;,
+  &quot;journal_external_ref&quot;: &quot;BANK-US-01&quot;,
+  &quot;payment_method&quot;: &quot;manual&quot;,
+  &quot;memo&quot;: &quot;Pago facturas INV-001 e INV-002&quot;,
+  &quot;matched_invoices&quot;: [
+    { &quot;invoice_external_ref&quot;: &quot;INV-001&quot;, &quot;amount&quot;: 1299.99 },
+    { &quot;invoice_external_ref&quot;: &quot;INV-002&quot;, &quot;amount&quot;: 1299.99 }
+  ]
+}</code></pre>
+<p><strong>Request Body — Pago a proveedor (outbound):</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PAY-002&quot;,
+  &quot;payment_type&quot;: &quot;outbound&quot;,
+  &quot;partner_type&quot;: &quot;supplier&quot;,
+  &quot;partner_external_ref&quot;: &quot;EXT-SUP-001&quot;,
+  &quot;amount&quot;: 8500.00,
+  &quot;currency_id&quot;: 2,
+  &quot;payment_date&quot;: &quot;2026-07-01&quot;,
+  &quot;journal_external_ref&quot;: &quot;BANK-US-01&quot;,
+  &quot;payment_method&quot;: &quot;bank_transfer&quot;,
+  &quot;memo&quot;: &quot;Pago lote componentes Q2 2026&quot;,
+  &quot;matched_invoices&quot;: [
+    { &quot;invoice_external_ref&quot;: &quot;VENDOR-BILL-005&quot;, &quot;amount&quot;: 8500.00 }
+  ]
+}</code></pre>
+<p><strong>Parámetros:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Default</th><th>Descripción</th></tr><tr><td>external_ref</td><td>string (max 255)</td><td>✅</td><td>—</td><td>ID único del sistema externo para este pago</td></tr><tr><td>payment_type</td><td>string</td><td>✅</td><td>—</td><td>&quot;inbound&quot; (cobro) o &quot;outbound&quot; (pago)</td></tr><tr><td>partner_type</td><td>string</td><td>✅</td><td>—</td><td>&quot;customer&quot; o &quot;supplier&quot;</td></tr><tr><td>partner_external_ref</td><td>string</td><td>✅</td><td>—</td><td>external_ref del cliente o proveedor</td></tr><tr><td>amount</td><td>number (&gt; 0)</td><td>✅</td><td>—</td><td>Monto total del pago</td></tr><tr><td>currency_id</td><td>integer</td><td>❌</td><td>moneda cia.</td><td>ID de moneda en Odoo</td></tr><tr><td>payment_date</td><td>string (date)</td><td>✅</td><td>—</td><td>Fecha &quot;YYYY-MM-DD&quot;</td></tr><tr><td>journal_external_ref</td><td>string</td><td>✅</td><td>—</td><td>Referencia del diario contable (mapeado en middleware)</td></tr><tr><td>payment_method</td><td>string</td><td>❌</td><td>&quot;manual&quot;</td><td>&quot;manual&quot;, &quot;check&quot;, &quot;bank_transfer&quot;, &quot;credit_card&quot;</td></tr><tr><td>memo</td><td>string</td><td>❌</td><td>—</td><td>Nota / referencia del pago</td></tr><tr><td>matched_invoices</td><td>array</td><td>❌</td><td>—</td><td>Facturas a conciliar (si se omite → pago a cuenta)</td></tr><tr><td>matched_invoices[].invoice_external_ref</td><td>string</td><td>✅ (si se envía)</td><td>—</td><td>external_ref de la factura</td></tr><tr><td>matched_invoices[].amount</td><td>number</td><td>❌</td><td>saldo pendiente</td><td>Monto a conciliar</td></tr></table></div>
+<blockquote><div>Nota: Las facturas (account.move) deben estar precargadas en Odoo. Este endpoint no las crea.</div></blockquote>
+<p><strong>Response 201 Created:</strong></p>
+<pre class="language-json"><code>{
+  &quot;status&quot;: &quot;created&quot;,
+  &quot;external_ref&quot;: &quot;EXT-PAY-001&quot;,
+  &quot;odoo_id&quot;: 156,
+  &quot;payment_type&quot;: &quot;inbound&quot;,
+  &quot;partner_type&quot;: &quot;customer&quot;,
+  &quot;partner&quot;: {
+    &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;
+  },
+  &quot;amount&quot;: 2599.98,
+  &quot;currency&quot;: { &quot;id&quot;: 2, &quot;name&quot;: &quot;USD&quot; },
+  &quot;payment_date&quot;: &quot;2026-07-02&quot;,
+  &quot;state&quot;: &quot;posted&quot;,
+  &quot;memo&quot;: &quot;Pago facturas INV-001 e INV-002&quot;,
+  &quot;matched_invoices&quot;: [
+    { &quot;invoice_external_ref&quot;: &quot;INV-001&quot;, &quot;odoo_id&quot;: 89, &quot;invoice_number&quot;: &quot;INV/2026/0001&quot;, &quot;amount_matched&quot;: 1299.99 },
+    { &quot;invoice_external_ref&quot;: &quot;INV-002&quot;, &quot;odoo_id&quot;: 90, &quot;invoice_number&quot;: &quot;INV/2026/0002&quot;, &quot;amount_matched&quot;: 1299.99 }
+  ],
+  &quot;created_at&quot;: &quot;2026-07-02T17:00:00Z&quot;
+}</code></pre>
+<h4 id="consultar-pago"><a class="heading-anchor" href="#consultar-pago">#</a>Consultar Pago</h4>
+<p><code>GET /v1/payments/{external_ref}</code></p>
+<p><strong>Parámetros de búsqueda:</strong></p>
+<div class="table-wrap"><table><tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr><tr><td>partner_external_ref</td><td>string</td><td>Filtrar por cliente/proveedor</td></tr><tr><td>payment_type</td><td>string</td><td>&quot;inbound&quot; o &quot;outbound&quot;</td></tr><tr><td>date_from</td><td>string (date)</td><td>Pagos desde fecha</td></tr><tr><td>date_to</td><td>string (date)</td><td>Pagos hasta fecha</td></tr><tr><td>state</td><td>string</td><td>&quot;draft&quot;, &quot;posted&quot;, &quot;cancelled&quot;</td></tr><tr><td>limit</td><td>integer</td><td>Default: 20</td></tr><tr><td>offset</td><td>integer</td><td>Default: 0</td></tr></table></div>
+<p><strong>Response 200 OK:</strong></p>
+<pre class="language-json"><code>{
+  &quot;external_ref&quot;: &quot;EXT-PAY-001&quot;,
+  &quot;odoo_id&quot;: 156,
+  &quot;payment_type&quot;: &quot;inbound&quot;,
+  &quot;partner_type&quot;: &quot;customer&quot;,
+  &quot;partner&quot;: { &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;, &quot;odoo_id&quot;: 42, &quot;name&quot;: &quot;Acme Corporation&quot; },
+  &quot;amount&quot;: 2599.98,
+  &quot;currency&quot;: { &quot;id&quot;: 2, &quot;name&quot;: &quot;USD&quot; },
+  &quot;payment_date&quot;: &quot;2026-07-02&quot;,
+  &quot;state&quot;: &quot;posted&quot;,
+  &quot;journal&quot;: { &quot;id&quot;: 5, &quot;name&quot;: &quot;Bank US&quot; },
+  &quot;payment_method&quot;: &quot;manual&quot;,
+  &quot;memo&quot;: &quot;Pago facturas INV-001 e INV-002&quot;,
+  &quot;matched_invoices&quot;: [
+    { &quot;invoice_external_ref&quot;: &quot;INV-001&quot;, &quot;odoo_id&quot;: 89, &quot;invoice_number&quot;: &quot;INV/2026/0001&quot;, &quot;amount_matched&quot;: 1299.99, &quot;amount_residual&quot;: 0.00 }
+  ]
+}</code></pre>
+<p><strong>Errores específicos:</strong></p>
+<div class="table-wrap"><table><tr><th>Status</th><th>Code</th><th>Caso</th></tr><tr><td>404</td><td>NOT_FOUND</td><td>external_ref no existe</td></tr><tr><td>400</td><td>DEPENDENCY_NOT_FOUND</td><td>partner_ext_ref, journal_ext_ref o invoice_ext_ref no existe</td></tr><tr><td>400</td><td>VALIDATION_ERROR</td><td>amount ≤ 0, payment_type inválido</td></tr><tr><td>409</td><td>BUSINESS_RULE_ERROR</td><td>Factura ya está totalmente pagada</td></tr><tr><td>409</td><td>CONFLICT</td><td>external_ref del pago duplicado</td></tr><tr><td>422</td><td>JOURNAL_MISMATCH</td><td>El diario no está configurado para ese payment_type</td></tr></table></div>
+<hr>
+<h2 id="4-manejo-de-errores"><a class="heading-anchor" href="#4-manejo-de-errores">#</a>4. Manejo de Errores</h2>
+<p>Todos los errores retornan esta estructura consistente:</p>
+<pre class="language-json"><code>{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;ERROR_CODE&quot;,
+    &quot;message&quot;: &quot;Descripción legible en español&quot;,
+    &quot;details&quot;: { &quot;field&quot;: &quot;información específica&quot; },
+    &quot;request_id&quot;: &quot;req_a1b2c3d4e5&quot;
+  }
+}</code></pre>
+<h3 id="cat-logo-completo-de-errores"><a class="heading-anchor" href="#cat-logo-completo-de-errores">#</a>Catálogo completo de errores</h3>
+<div class="table-wrap"><table><tr><th>HTTP</th><th>Error Code</th><th>Descripción</th></tr><tr><td>400</td><td>VALIDATION_ERROR</td><td>Campos requeridos faltantes o con formato inválido</td></tr><tr><td>400</td><td>INVALID_COUNTRY</td><td>Código de país no válido</td></tr><tr><td>400</td><td>INVALID_TYPE</td><td>Tipo de entidad no reconocido</td></tr><tr><td>400</td><td>DUPLICATE_SKU</td><td>SKU/default_code duplicado</td></tr><tr><td>400</td><td>DUPLICATE_BOM</td><td>BoM duplicada para el producto</td></tr><tr><td>400</td><td>DEPENDENCY_NOT_FOUND</td><td>Referencia externa dependiente no existe</td></tr><tr><td>401</td><td>AUTHENTICATION_ERROR</td><td>API Key inválida o falta autenticación</td></tr><tr><td>401</td><td>TOKEN_EXPIRED</td><td>JWT expirado</td></tr><tr><td>403</td><td>PERMISSION_DENIED</td><td>Usuario sin permisos para la operación</td></tr><tr><td>404</td><td>NOT_FOUND</td><td>Recurso no encontrado</td></tr><tr><td>409</td><td>CONFLICT</td><td>Conflicto de estado (ej. pago duplicado)</td></tr><tr><td>409</td><td>BUSINESS_RULE_ERROR</td><td>Regla de negocio de Odoo violada</td></tr><tr><td>422</td><td>JOURNAL_MISMATCH</td><td>Diario no configurado para el tipo de pago</td></tr><tr><td>429</td><td>RATE_LIMIT</td><td>Demasiadas peticiones</td></tr><tr><td>500</td><td>ODOO_ERROR</td><td>Error interno de Odoo</td></tr><tr><td>502</td><td>UPSTREAM_UNAVAILABLE</td><td>Odoo no disponible</td></tr><tr><td>504</td><td>UPSTREAM_TIMEOUT</td><td>Timeout esperando respuesta de Odoo</td></tr></table></div>
+<hr>
+<h2 id="5-idempotencia-y-mapeo"><a class="heading-anchor" href="#5-idempotencia-y-mapeo">#</a>5. Idempotencia y Mapeo</h2>
+<p>Toda entidad del sistema externo se identifica por su external_ref, que es único, estable e inmutable. El middleware mantiene una tabla interna de mapeo que resuelve external_ref → odoo_id.</p>
+<h3 id="tabla-de-mapeo-external-mapping"><a class="heading-anchor" href="#tabla-de-mapeo-external-mapping">#</a>Tabla de mapeo (external_mapping)</h3>
+<div class="table-wrap"><table><tr><th>Columna</th><th>Tipo</th><th>Descripción</th></tr><tr><td>id</td><td>SERIAL PK</td><td>Identificador interno</td></tr><tr><td>entity_type</td><td>VARCHAR(50)</td><td>&#x27;contact&#x27;, &#x27;product&#x27;, &#x27;bom&#x27;, &#x27;payment&#x27;</td></tr><tr><td>external_ref</td><td>VARCHAR(255)</td><td>ID único del sistema externo</td></tr><tr><td>odoo_id</td><td>INTEGER</td><td>ID correspondiente en Odoo</td></tr><tr><td>odoo_model</td><td>VARCHAR(100)</td><td>&#x27;res.partner&#x27;, &#x27;product.template&#x27;, etc.</td></tr><tr><td>created_at</td><td>TIMESTAMPTZ</td><td>Fecha de creación del mapeo</td></tr><tr><td>updated_at</td><td>TIMESTAMPTZ</td><td>Fecha de última actualización</td></tr></table></div>
+<h3 id="comportamiento-del-upsert"><a class="heading-anchor" href="#comportamiento-del-upsert">#</a>Comportamiento del upsert</h3>
+<div class="table-wrap"><table><tr><th>Escenario</th><th>Acción del Middleware</th></tr><tr><td>external_ref no existe en mapping</td><td>CREATE en Odoo, guardar mapping nuevo</td></tr><tr><td>external_ref existe en mapping</td><td>WRITE (actualizar) en Odoo usando el ID mapeado</td></tr><tr><td>Misma request repetida</td><td>Idempotente: mismo resultado, sin duplicados</td></tr></table></div>
+<h3 id="unicidad"><a class="heading-anchor" href="#unicidad">#</a>Unicidad</h3>
+<ul>
+<li>CONSTRAINT UNIQUE(entity_type, external_ref)</li>
+</ul>
+<hr>
+<h2 id="6-mapeo-de-campos-odoo-api"><a class="heading-anchor" href="#6-mapeo-de-campos-odoo-api">#</a>6. Mapeo de Campos Odoo ↔ API</h2>
+<h3 id="contactos-res-partner"><a class="heading-anchor" href="#contactos-res-partner">#</a>Contactos (res.partner)</h3>
+<div class="table-wrap"><table><tr><th>API Field</th><th>Odoo Field</th><th>Notas</th></tr><tr><td>external_ref</td><td>—</td><td>Solo en mapping</td></tr><tr><td>name</td><td>name</td><td></td></tr><tr><td>is_company</td><td>is_company</td><td></td></tr><tr><td>vat</td><td>vat</td><td></td></tr><tr><td>email</td><td>email</td><td></td></tr><tr><td>phone</td><td>phone</td><td></td></tr><tr><td>mobile</td><td>mobile</td><td></td></tr><tr><td>website</td><td>website</td><td></td></tr><tr><td>street</td><td>street</td><td></td></tr><tr><td>street2</td><td>street2</td><td></td></tr><tr><td>city</td><td>city</td><td></td></tr><tr><td>state</td><td>state_id</td><td>Resuelto por nombre</td></tr><tr><td>zip</td><td>zip</td><td></td></tr><tr><td>country_code</td><td>country_id</td><td>Resuelto por código ISO-2</td></tr><tr><td>is_customer</td><td>customer_rank</td><td>&gt; 0</td></tr><tr><td>is_supplier</td><td>supplier_rank</td><td>&gt; 0</td></tr><tr><td>payment_term</td><td>property_payment_term_id</td><td>Resuelto por nombre</td></tr><tr><td>contacts</td><td>child_ids</td><td>Contactos hijo (res.partner tipo contact)</td></tr><tr><td>tags</td><td>category_id</td><td>Resuelto por nombre</td></tr></table></div>
+<h3 id="productos-product-template"><a class="heading-anchor" href="#productos-product-template">#</a>Productos (product.template)</h3>
+<div class="table-wrap"><table><tr><th>API Field</th><th>Odoo Field</th><th>Notas</th></tr><tr><td>name</td><td>name</td><td></td></tr><tr><td>default_code</td><td>default_code</td><td></td></tr><tr><td>barcode</td><td>barcode</td><td></td></tr><tr><td>type</td><td>detailed_type</td><td>Mapeo: product→product, consu→consu, service→service</td></tr><tr><td>list_price</td><td>list_price</td><td></td></tr><tr><td>standard_price</td><td>standard_price</td><td></td></tr><tr><td>currency_id</td><td>currency_id</td><td></td></tr><tr><td>uom_id</td><td>uom_id</td><td></td></tr><tr><td>uom_po_id</td><td>uom_po_id</td><td></td></tr><tr><td>description</td><td>description_sale</td><td></td></tr><tr><td>description_purchase</td><td>description_purchase</td><td></td></tr><tr><td>sale_ok</td><td>sale_ok</td><td></td></tr><tr><td>purchase_ok</td><td>purchase_ok</td><td></td></tr><tr><td>active</td><td>active</td><td></td></tr><tr><td>categ_id</td><td>categ_id</td><td>Busca o crea por nombre</td></tr><tr><td>taxes_id</td><td>taxes_id</td><td>Busca por nombre</td></tr><tr><td>supplier_taxes_id</td><td>supplier_taxes_id</td><td>Busca por nombre</td></tr><tr><td>weight</td><td>weight</td><td></td></tr><tr><td>volume</td><td>volume</td><td></td></tr></table></div>
+<h3 id="lista-de-materiales-mrp-bom"><a class="heading-anchor" href="#lista-de-materiales-mrp-bom">#</a>Lista de Materiales (mrp.bom)</h3>
+<div class="table-wrap"><table><tr><th>API Field</th><th>Odoo Field</th><th>Notas</th></tr><tr><td>code</td><td>code</td><td></td></tr><tr><td>product_uom_id</td><td>product_uom_id</td><td></td></tr><tr><td>type</td><td>type</td><td>&quot;normal&quot;, &quot;phantom&quot;, &quot;subcontracting&quot;</td></tr><tr><td>active</td><td>active</td><td></td></tr></table></div>
+<h3 id="pagos-account-payment"><a class="heading-anchor" href="#pagos-account-payment">#</a>Pagos (account.payment)</h3>
+<div class="table-wrap"><table><tr><th>API Field</th><th>Odoo Field</th><th>Notas</th></tr><tr><td>payment_type</td><td>payment_type</td><td>&quot;inbound&quot; o &quot;outbound&quot;</td></tr><tr><td>partner_type</td><td>partner_type</td><td>&quot;customer&quot; o &quot;supplier&quot;</td></tr><tr><td>partner_external_ref</td><td>partner_id</td><td>Resuelto vía mapping</td></tr><tr><td>amount</td><td>amount</td><td></td></tr><tr><td>currency_id</td><td>currency_id</td><td></td></tr><tr><td>payment_date</td><td>date</td><td></td></tr><tr><td>journal_external_ref</td><td>journal_id</td><td>Mapeado en middleware</td></tr><tr><td>payment_method</td><td>payment_method_line_id</td><td>Mapeado por código</td></tr><tr><td>memo</td><td>ref</td><td></td></tr><tr><td>matched_invoices</td><td>—</td><td>Conciliación vía account.move.line</td></tr></table></div>
+<hr>
+<h2 id="7-ejemplos-de-integraci-n-curl"><a class="heading-anchor" href="#7-ejemplos-de-integraci-n-curl">#</a>7. Ejemplos de Integración (curl)</h2>
+<h3 id="flujo-completo"><a class="heading-anchor" href="#flujo-completo">#</a>Flujo completo</h3>
+<h4 id="1-autenticaci-n"><a class="heading-anchor" href="#1-autenticaci-n">#</a>1. Autenticación</h4>
+<pre class="language-bash"><code>TOKEN=$(curl -s -X POST https://api-integracion.mi-empresa.com/v1/auth/token \
+  -H &quot;Content-Type: application/json&quot; \
+  -d &#x27;{&quot;api_key&quot;:&quot;a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx&quot;}&#x27; | jq -r &#x27;.access_token&#x27;)
+
+AUTH=&quot;Authorization: Bearer $TOKEN&quot;</code></pre>
+<h4 id="2-crear-contacto"><a class="heading-anchor" href="#2-crear-contacto">#</a>2. Crear Contacto</h4>
+<pre class="language-bash"><code>curl -s -X POST https://api-integracion.mi-empresa.com/v1/contacts \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;$AUTH&quot; \
+  -d &#x27;{
+    &quot;external_ref&quot;: &quot;EXT-CUST-001&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;is_company&quot;: true,
+    &quot;email&quot;: &quot;info@acme.com&quot;,
+    &quot;is_customer&quot;: true,
+    &quot;country_code&quot;: &quot;US&quot;
+  }&#x27;</code></pre>
+<h4 id="3-crear-producto"><a class="heading-anchor" href="#3-crear-producto">#</a>3. Crear Producto</h4>
+<pre class="language-bash"><code>curl -s -X POST https://api-integracion.mi-empresa.com/v1/products \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;$AUTH&quot; \
+  -d &#x27;{
+    &quot;external_ref&quot;: &quot;EXT-PROD-001&quot;,
+    &quot;name&quot;: &quot;Laptop Pro 15\&quot;&quot;,
+    &quot;type&quot;: &quot;product&quot;,
+    &quot;list_price&quot;: 1299.99
+  }&#x27;</code></pre>
+<h4 id="4-crear-producto-con-variantes"><a class="heading-anchor" href="#4-crear-producto-con-variantes">#</a>4. Crear Producto con variantes</h4>
+<pre class="language-bash"><code>curl -s -X POST https://api-integracion.mi-empresa.com/v1/products \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;$AUTH&quot; \
+  -d &#x27;{
+    &quot;external_ref&quot;: &quot;EXT-PROD-002&quot;,
+    &quot;name&quot;: &quot;Camiseta Algodón Premium&quot;,
+    &quot;type&quot;: &quot;product&quot;,
+    &quot;list_price&quot;: 29.99,
+    &quot;attributes&quot;: [
+      {&quot;name&quot;: &quot;Talle&quot;, &quot;values&quot;: [&quot;S&quot;, &quot;M&quot;, &quot;L&quot;, &quot;XL&quot;]},
+      {&quot;name&quot;: &quot;Color&quot;, &quot;values&quot;: [&quot;Negro&quot;, &quot;Blanco&quot;, &quot;Azul&quot;]}
+    ]
+  }&#x27;</code></pre>
+<h4 id="5-crear-bom"><a class="heading-anchor" href="#5-crear-bom">#</a>5. Crear BoM</h4>
+<pre class="language-bash"><code>curl -s -X POST https://api-integracion.mi-empresa.com/v1/boms \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;$AUTH&quot; \
+  -d &#x27;{
+    &quot;external_ref&quot;: &quot;EXT-BOM-001&quot;,
+    &quot;product_external_ref&quot;: &quot;EXT-PROD-001&quot;,
+    &quot;product_qty&quot;: 1.0,
+    &quot;lines&quot;: [
+      {&quot;product_external_ref&quot;: &quot;EXT-PROD-002&quot;, &quot;product_qty&quot;: 1.0},
+      {&quot;product_external_ref&quot;: &quot;EXT-PROD-003&quot;, &quot;product_qty&quot;: 2.0}
+    ]
+  }&#x27;</code></pre>
+<h4 id="6-registrar-pago"><a class="heading-anchor" href="#6-registrar-pago">#</a>6. Registrar Pago</h4>
+<pre class="language-bash"><code>curl -s -X POST https://api-integracion.mi-empresa.com/v1/payments \
+  -H &quot;Content-Type: application/json&quot; \
+  -H &quot;$AUTH&quot; \
+  -d &#x27;{
+    &quot;external_ref&quot;: &quot;EXT-PAY-001&quot;,
+    &quot;payment_type&quot;: &quot;inbound&quot;,
+    &quot;partner_type&quot;: &quot;customer&quot;,
+    &quot;partner_external_ref&quot;: &quot;EXT-CUST-001&quot;,
+    &quot;amount&quot;: 2599.98,
+    &quot;currency_id&quot;: 2,
+    &quot;payment_date&quot;: &quot;2026-07-02&quot;,
+    &quot;journal_external_ref&quot;: &quot;BANK-US-01&quot;,
+    &quot;matched_invoices&quot;: [
+      {&quot;invoice_external_ref&quot;: &quot;INV-001&quot;, &quot;amount&quot;: 1299.99},
+      {&quot;invoice_external_ref&quot;: &quot;INV-002&quot;, &quot;amount&quot;: 1299.99}
+    ]
+  }&#x27;</code></pre>
+<hr>
+<h2 id="8-contrato-de-notificaciones-salientes"><a class="heading-anchor" href="#8-contrato-de-notificaciones-salientes">#</a>8. Contrato de Notificaciones Salientes</h2>
+<p>Como parte del módulo <code>integrador_odoo2delta</code>, Odoo 17 notifica al sistema externo (DeltaV) cuando se crean o confirman documentos de venta y compra. Esta sección define el contrato que el sistema externo debe implementar para recibir dichas notificaciones.</p>
+<h3 id="8-1-endpoints-que-el-sistema-externo-debe-exponer"><a class="heading-anchor" href="#8-1-endpoints-que-el-sistema-externo-debe-exponer">#</a>8.1 Endpoints que el Sistema Externo debe exponer</h3>
+<div class="table-wrap"><table><tr><th>Método</th><th>Endpoint</th><th>Evento Odoo</th><th>Descripción</th></tr><tr><td><code>POST</code></td><td><code>/notificaciones/ventas</code></td><td><code>sale.order</code> → create / action_confirm</td><td>Notificación de nueva venta o confirmación</td></tr><tr><td><code>POST</code></td><td><code>/notificaciones/compras</code></td><td><code>purchase.order</code> → create / button_confirm</td><td>Notificación de nueva orden de compra o confirmación</td></tr></table></div>
+<p><strong>Autenticación:</strong> Bearer Token (JWT) en header <code>Authorization</code>.</p>
+<p><strong>Comportamiento esperado del sistema externo:</strong></p>
+<ul>
+<li>Responder <code>2xx</code> (200/201) para confirmar recepción exitosa</li>
+<li>Responder <code>4xx</code> para errores de negocio (no se reintenta)</li>
+<li>Timeout máximo: 15 segundos</li>
+<li>Si no responde en 15s o devuelve <code>5xx</code>, Odoo reintenta hasta 4 veces con backoff exponencial (1s, 2s, 4s, 8s)</li>
+</ul>
+<h3 id="8-2-payload-de-notificaci-n-venta"><a class="heading-anchor" href="#8-2-payload-de-notificaci-n-venta">#</a>8.2 Payload de Notificación — Venta</h3>
+<p><code>POST /notificaciones/ventas</code> desde Odoo → Sistema Externo</p>
+<pre class="language-json"><code>{
+  &quot;tipo&quot;: &quot;venta&quot;,
+  &quot;evento&quot;: &quot;confirmacion&quot;,
+  &quot;id_odoo&quot;: 42,
+  &quot;numero&quot;: &quot;S00042&quot;,
+  &quot;fecha_creacion&quot;: &quot;2026-07-15T10:30:00Z&quot;,
+  &quot;fecha_confirmacion&quot;: &quot;2026-07-15T10:35:00Z&quot;,
+  &quot;estado&quot;: &quot;sale&quot;,
+  &quot;cliente&quot;: {
+    &quot;id_odoo&quot;: 15,
+    &quot;nombre&quot;: &quot;Acme Corporation&quot;,
+    &quot;email&quot;: &quot;info@acme.com&quot;,
+    &quot;vat&quot;: &quot;US123456789&quot;
+  },
+  &quot;lineas&quot;: [
+    {
+      &quot;producto&quot;: {
+        &quot;id_odoo&quot;: 30,
+        &quot;nombre&quot;: &quot;Laptop Pro 15\&quot;&quot;,
+        &quot;sku&quot;: &quot;LP15-2026&quot;,
+        &quot;cantidad&quot;: 2.0,
+        &quot;precio_unitario&quot;: 1299.99,
+        &quot;subtotal&quot;: 2599.98
+      }
+    }
+  ],
+  &quot;total_neto&quot;: 2599.98,
+  &quot;total_impuestos&quot;: 389.99,
+  &quot;total&quot;: 2989.97,
+  &quot;moneda&quot;: {&quot;id&quot;: 2, &quot;codigo&quot;: &quot;USD&quot;},
+  &quot;notas&quot;: &quot;Entrega urgente — prioridad alta&quot;
+}</code></pre>
+<p><strong>Campos del payload de venta:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr><tr><td>tipo</td><td>string</td><td>Siempre <code>&quot;venta&quot;</code></td></tr><tr><td>evento</td><td>string</td><td><code>&quot;creacion&quot;</code> o <code>&quot;confirmacion&quot;</code> según el hook disparado</td></tr><tr><td>id_odoo</td><td>integer</td><td>ID del <code>sale.order</code> en Odoo</td></tr><tr><td>numero</td><td>string</td><td>Número de orden de venta (secuencia)</td></tr><tr><td>fecha_creacion</td><td>string (ISO 8601)</td><td>Fecha de creación de la orden</td></tr><tr><td>fecha_confirmacion</td><td>string (ISO 8601)</td><td>Fecha de confirmación (null si solo se creó)</td></tr><tr><td>estado</td><td>string</td><td>Estado del <code>sale.order</code>: <code>&quot;draft&quot;</code>, <code>&quot;sent&quot;</code>, <code>&quot;sale&quot;</code>, <code>&quot;done&quot;</code>, <code>&quot;cancel&quot;</code></td></tr><tr><td>cliente</td><td>object</td><td>Datos del cliente (<code>res.partner</code>)</td></tr><tr><td>cliente.id_odoo</td><td>integer</td><td>ID en Odoo</td></tr><tr><td>cliente.nombre</td><td>string</td><td>Razón social</td></tr><tr><td>cliente.email</td><td>string</td><td>Email principal</td></tr><tr><td>cliente.vat</td><td>string</td><td>Nº de identificación fiscal</td></tr><tr><td>lineas</td><td>array</td><td>Líneas de la orden (<code>sale.order.line</code>)</td></tr><tr><td>lineas[].producto</td><td>object</td><td>Producto de la línea</td></tr><tr><td>lineas[].producto.id_odoo</td><td>integer</td><td>ID del producto en Odoo</td></tr><tr><td>lineas[].producto.nombre</td><td>string</td><td>Nombre del producto</td></tr><tr><td>lineas[].producto.sku</td><td>string</td><td>SKU / referencia interna</td></tr><tr><td>lineas[].cantidad</td><td>number</td><td>Cantidad pedida</td></tr><tr><td>lineas[].precio_unitario</td><td>number</td><td>Precio unitario</td></tr><tr><td>lineas[].subtotal</td><td>number</td><td>Cantidad × precio unitario</td></tr><tr><td>total_neto</td><td>number</td><td>Suma de subtotales sin impuestos</td></tr><tr><td>total_impuestos</td><td>number</td><td>Suma de impuestos</td></tr><tr><td>total</td><td>number</td><td>Total de la orden (neto + impuestos)</td></tr><tr><td>moneda</td><td>object</td><td>Moneda de la orden</td></tr><tr><td>moneda.id</td><td>integer</td><td>ID de moneda en Odoo</td></tr><tr><td>moneda.codigo</td><td>string</td><td>Código ISO 4217: <code>&quot;USD&quot;</code>, <code>&quot;EUR&quot;</code>, <code>&quot;ARS&quot;</code></td></tr><tr><td>notas</td><td>string</td><td>Notas internas de la orden</td></tr></table></div>
+<h3 id="8-3-payload-de-notificaci-n-compra"><a class="heading-anchor" href="#8-3-payload-de-notificaci-n-compra">#</a>8.3 Payload de Notificación — Compra</h3>
+<p><code>POST /notificaciones/compras</code> desde Odoo → Sistema Externo</p>
+<pre class="language-json"><code>{
+  &quot;tipo&quot;: &quot;compra&quot;,
+  &quot;evento&quot;: &quot;confirmacion&quot;,
+  &quot;id_odoo&quot;: 15,
+  &quot;numero&quot;: &quot;P00015&quot;,
+  &quot;fecha_creacion&quot;: &quot;2026-07-15T09:00:00Z&quot;,
+  &quot;fecha_confirmacion&quot;: &quot;2026-07-15T09:05:00Z&quot;,
+  &quot;fecha_prevista&quot;: &quot;2026-07-30&quot;,
+  &quot;estado&quot;: &quot;purchase&quot;,
+  &quot;proveedor&quot;: {
+    &quot;id_odoo&quot;: 28,
+    &quot;nombre&quot;: &quot;TechDistributors Inc&quot;,
+    &quot;email&quot;: &quot;orders@techdist.com&quot;,
+    &quot;vat&quot;: &quot;US987654321&quot;
+  },
+  &quot;lineas&quot;: [
+    {
+      &quot;producto&quot;: {
+        &quot;id_odoo&quot;: 30,
+        &quot;nombre&quot;: &quot;Laptop Pro 15\&quot;&quot;,
+        &quot;sku&quot;: &quot;LP15-2026&quot;
+      },
+      &quot;cantidad&quot;: 10.0,
+      &quot;precio_unitario&quot;: 850.00,
+      &quot;subtotal&quot;: 8500.00
+    }
+  ],
+  &quot;total_neto&quot;: 8500.00,
+  &quot;total_impuestos&quot;: 1275.00,
+  &quot;total&quot;: 9775.00,
+  &quot;moneda&quot;: {&quot;id&quot;: 2, &quot;codigo&quot;: &quot;USD&quot;},
+  &quot;notas&quot;: &quot;Pedido trimestral Q3 2026&quot;
+}</code></pre>
+<p><strong>Campos adicionales del payload de compra:</strong></p>
+<div class="table-wrap"><table><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr><tr><td>tipo</td><td>string</td><td>Siempre <code>&quot;compra&quot;</code></td></tr><tr><td>evento</td><td>string</td><td><code>&quot;creacion&quot;</code> o <code>&quot;confirmacion&quot;</code></td></tr><tr><td>id_odoo</td><td>integer</td><td>ID del <code>purchase.order</code> en Odoo</td></tr><tr><td>numero</td><td>string</td><td>Número de orden de compra</td></tr><tr><td>fecha_prevista</td><td>string (date)</td><td>Fecha prevista de recepción <code>YYYY-MM-DD</code></td></tr><tr><td>proveedor</td><td>object</td><td>Datos del proveedor (<code>res.partner</code>)</td></tr><tr><td>estado</td><td>string</td><td>Estado: <code>&quot;draft&quot;</code>, <code>&quot;sent&quot;</code>, <code>&quot;to approve&quot;</code>, <code>&quot;purchase&quot;</code>, <code>&quot;done&quot;</code>, <code>&quot;cancel&quot;</code></td></tr></table></div>
+<h3 id="8-4-configuraci-n-del-m-dulo"><a class="heading-anchor" href="#8-4-configuraci-n-del-m-dulo">#</a>8.4 Configuración del Módulo</h3>
+<p>El módulo <code>integrador_odoo2delta</code> expone las siguientes opciones de configuración en <strong>Settings → Integraciones → DeltaV</strong>:</p>
+<div class="table-wrap"><table><tr><th>Parámetro</th><th>Descripción</th><th>Default</th></tr><tr><td><strong>URL API DeltaV</strong></td><td>URL base de la API del sistema externo para notificaciones</td><td>(vacío — requerido)</td></tr><tr><td><strong>API Key</strong></td><td>Token de autenticación para las llamadas salientes</td><td>(vacío — requerido)</td></tr><tr><td><strong>Timeout HTTP</strong></td><td>Timeout máximo para cada intento de notificación</td><td>15 segundos</td></tr><tr><td><strong>Máx. reintentos</strong></td><td>Número máximo de reintentos ante errores de red/5xx</td><td>4</td></tr><tr><td><strong>Backoff inicial</strong></td><td>Espera inicial entre reintentos (se duplica cada vez)</td><td>1 segundo</td></tr><tr><td><strong>Notificar al crear</strong></td><td>Enviar notificación en evento <code>create</code> además de <code>confirm</code></td><td>false</td></tr><tr><td><strong>Log nivel</strong></td><td>Nivel de logging para notificaciones</td><td>INFO</td></tr></table></div>
+<h3 id="8-5-errores-y-reintentos"><a class="heading-anchor" href="#8-5-errores-y-reintentos">#</a>8.5 Errores y reintentos</h3>
+<div class="table-wrap"><table><tr><th>Escenario</th><th>Comportamiento</th></tr><tr><td>Sistema externo responde <code>2xx</code></td><td>✅ Notificación exitosa. Se registra en log.</td></tr><tr><td>Sistema externo responde <code>4xx</code></td><td>❌ Error de negocio. No se reintenta. Se registra en log + mensaje en chatter del documento.</td></tr><tr><td>Sistema externo responde <code>5xx</code></td><td>🔄 Reintento con backoff exponencial (1s, 2s, 4s, 8s). Máximo 4 intentos.</td></tr><tr><td>Timeout (&gt; 15s)</td><td>🔄 Igual que <code>5xx</code>.</td></tr><tr><td>Error de red (DNS, conexión)</td><td>🔄 Igual que <code>5xx</code>.</td></tr><tr><td>Se agotan los 4 reintentos</td><td>🚨 Se registra error crítico en log + se notifica al administrador vía chatter.</td></tr></table></div>
+<blockquote><div><strong>Nota:</strong> Las notificaciones son <strong>fire-and-forget</strong> desde la perspectiva del usuario de Odoo. La confirmación de la orden no se bloquea si la notificación falla — los reintentos ocurren en segundo plano.</div></blockquote>
+<hr>
+<h2 id="fuente-original"><a class="heading-anchor" href="#fuente-original">#</a>Fuente original</h2>
+<ul>
+<li><a href="https://gist.github.com/wsf/5121b40da8af102b5afbdafb43c3cfed">Gist: hito_deltav_integra.md</a></li>
+</ul>
+  </main>
+</div>
+<script src="../../../assets/js/search.js" defer></script>
+<script src="../../../assets/js/navigation.js" defer></script>
+<script src="../../../assets/js/print.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=ai-legible&utm_source=comment&utm_medium=referral&utm_id=efda1071-5f24-4e91-b948-eaef84e09358
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="hosting-provider" content="Netlify">
+<meta name="netlify-deploy" content="https://netlify.new/?utm_campaign=ai-legible&amp;utm_source=meta&amp;utm_medium=referral&amp;utm_id=efda1071-5f24-4e91-b948-eaef84e09358">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Introducción — Integración Deltav → Odoo 17 — Hitofusion Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --c-bg:#ffffff;--c-surface:#f6f8fb;--c-border:#e2e6ec;--c-text:#1a1d23;
+  --c-text2:#545b67;--c-accent:#1a6ff5;--c-accent-h:#1557c4;
+  --c-code-bg:#1c1e26;--c-code-text:#d6daf0;
+  --c-callout-bg:#eef4ff;--c-callout-b:#1a6ff5;
+  --sidebar-w:272px;--header-h:55px;--radius:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,-apple-system,sans-serif;color:var(--c-text);background:var(--c-bg);line-height:1.68;-webkit-font-smoothing:antialiased}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:100;height:var(--header-h);display:flex;align-items:center;padding:0 22px;background:var(--c-bg);border-bottom:1px solid var(--c-border);gap:10px}
+header .logo{font-weight:700;font-size:1.05rem;color:var(--c-text);text-decoration:none;display:flex;align-items:center;gap:8px}
+header .logo svg{width:23px;height:23px}
+
+/* ── Layout ── */
+.layout{display:flex;min-height:calc(100vh - var(--header-h))}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;border-right:1px solid var(--c-border);background:var(--c-bg);overflow-y:auto;position:sticky;top:var(--header-h);height:calc(100vh - var(--header-h));padding:20px 14px}
+.content{flex:1;min-width:0;max-width:940px;padding:34px 48px 80px}
+
+/* ── Sidebar nav ── */
+.sidebar ul{list-style:none;padding:0}
+.sidebar li{margin:1px 0}
+.sidebar li>ul{padding-left:12px;margin:2px 0 4px}
+.sidebar a{display:block;padding:6px 10px;border-radius:6px;font-size:.845rem;color:var(--c-text2);text-decoration:none;transition:background .12s,color .12s}
+.sidebar a:hover,.sidebar a:focus{background:var(--c-surface);color:var(--c-text)}
+.sidebar a.active{background:#e8f0fe;color:var(--c-accent);font-weight:500}
+.sidebar .nav-label{padding:4px 10px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--c-text2);opacity:.6;margin-top:2px}
+
+/* ── Collapsible details (pure HTML/CSS, no JS) ── */
+.sidebar details>summary{display:flex;align-items:center;padding:6px 10px 6px 4px;font-size:.845rem;font-weight:500;color:var(--c-text);cursor:pointer;border-radius:6px;user-select:none;list-style:none}
+.sidebar details>summary::-webkit-details-marker{display:none}
+.sidebar details>summary:hover{background:var(--c-surface)}
+.sidebar details>summary::before{
+  content:"";display:inline-block;width:16px;height:16px;margin-right:4px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23545b67' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition:transform .18s;flex-shrink:0;
+}
+.sidebar details[open]>summary::before{transform:rotate(90deg)}
+.sidebar details>summary>a{color:inherit;text-decoration:none;flex:1;font-weight:inherit;font-size:inherit;padding:0;border-radius:0;background:none}
+.sidebar details>summary>a:hover{background:none;text-decoration:none}
+.sidebar details>summary>a.active{color:var(--c-accent);font-weight:500}
+.sidebar details>ul{padding-left:6px;margin-top:1px;border-left:1px solid var(--c-border);margin-left:10px}
+
+/* ── Typography ── */
+h1{font-size:2rem;font-weight:700;letter-spacing:-.015em;margin-bottom:6px}
+h2{font-size:1.38rem;font-weight:600;margin-top:44px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--c-border)}
+h3{font-size:1.12rem;font-weight:600;margin-top:30px;margin-bottom:8px}
+h4{font-size:1rem;font-weight:600;margin-top:22px;margin-bottom:6px}
+p{margin-bottom:14px;color:var(--c-text2)}
+a{color:var(--c-accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:var(--c-text);font-weight:600}
+hr{border:0;border-top:1px solid var(--c-border);margin:34px 0}
+.heading-anchor{opacity:0;font-size:.8em;margin-left:-1.1em;padding-right:.3em;color:var(--c-accent);transition:opacity .15s;text-decoration:none;font-weight:400}
+h1:hover .heading-anchor,h2:hover .heading-anchor,h3:hover .heading-anchor,h4:hover .heading-anchor{opacity:1}
+
+/* ── Code ── */
+code{font-family:"JetBrains Mono","Fira Code",monospace;font-size:.82rem}
+:not(pre)>code{background:var(--c-surface);color:#c92a5c;padding:2px 6px;border-radius:4px;border:1px solid var(--c-border);font-weight:500}
+pre{background:var(--c-code-bg);color:var(--c-code-text);padding:20px 24px;border-radius:var(--radius);overflow-x:auto;margin-bottom:20px;font-size:.8rem;line-height:1.58}
+pre code{background:none;color:inherit;padding:0;border:0;font-weight:400;font-size:inherit}
+
+/* ── Diagrams ── */
+.puml-diagram{text-align:center;margin:24px 0;overflow-x:auto}
+.puml-diagram svg{max-width:100%;height:auto}
+.home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin:28px 0}
+.home-cards hr{grid-column:1/-1;margin:0;opacity:0}
+.home-cards h3{margin:0 0 12px;font-size:1.2rem;display:flex;align-items:center;gap:8px}
+.home-cards p{margin:0 0 14px;color:var(--c-text2);line-height:1.6}
+.home-cards .card{background:var(--c-surface,#fff);border:1px solid var(--c-border);border-radius:var(--radius);padding:24px}
+.home-cards table{margin:0 0 14px;font-size:.88rem}
+.home-cards table td,.home-cards table th{padding:4px 10px}
+.home-cards a:last-child{display:inline-block;font-weight:600}
+
+/* ── Tables ── */
+.table-wrap{overflow-x:auto;margin-bottom:22px;border:1px solid var(--c-border);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--c-border)}
+th{background:var(--c-surface);font-weight:600;color:var(--c-text);white-space:nowrap}
+td{color:var(--c-text2)}
+tr:last-child td{border-bottom:0}
+
+/* ── Lists ── */
+ul,ol{margin-bottom:16px;padding-left:22px;color:var(--c-text2)}
+li{margin-bottom:4px}li>ul,li>ol{margin-top:4px;margin-bottom:0}
+
+/* ── Blockquote ── */
+blockquote{margin:16px 0 20px;padding:14px 18px;border-radius:var(--radius);border-left:4px solid var(--c-callout-b);background:var(--c-callout-bg)}
+blockquote div{font-size:.88rem;color:var(--c-text)}
+
+/* ── Mobile ── */
+.menu-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--c-text)}
+.menu-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:98}
+@media(max-width:860px){
+  .menu-btn{display:flex;align-items:center}
+  .sidebar{position:fixed;left:0;top:var(--header-h);z-index:99;transform:translateX(-100%);transition:transform .22s cubic-bezier(.4,0,.2,1);box-shadow:2px 0 16px rgba(0,0,0,.1)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-overlay.show{display:block}
+  .content{padding:24px 18px 60px;max-width:100%}
+  h1{font-size:1.55rem}h2{font-size:1.2rem}
+}
+@media print{.sidebar,.menu-btn,.menu-overlay{display:none}.content{max-width:100%;padding:0}}
+</style>
+<link rel="stylesheet" href="../../../assets/css/brand.css" />
+</head>
+<body>
+<header>
+  <button class="menu-btn" onclick="var s=document.getElementById('sb'),o=document.getElementById('mo');s.classList.toggle('open');o.classList.toggle('show')" aria-label="Menú">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+  </button>
+<a href="../../../" class="logo" aria-label="Hitofusion Docs — Inicio">
+  <img src="../../../assets/images/hitofusion-logo.webp" alt="HitoFusion" width="184" height="32" />
+  <span class="docs-label">Documentación técnica</span>
+</a>
+<div class="site-search" data-site-search role="search">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+  <input id="site-search-input" type="search" placeholder="Buscar temas" autocomplete="off" aria-label="Buscar temas en la documentación" aria-controls="site-search-results" aria-expanded="false" />
+  <kbd aria-hidden="true">/</kbd>
+  <div id="site-search-results" class="search-results" data-search-results role="listbox" hidden></div>
+</div>
+</header>
+<div class="menu-overlay" id="mo" onclick="document.getElementById('sb').classList.remove('open');this.classList.remove('show')"></div>
+<div class="layout">
+  <aside class="sidebar" id="sb">
+    <ul><li><a href='../../../'>Home</a></li>
+<li><details open><summary>Integraciones</summary><ul><li><a href='../../../integraciones/tipos-de-integraciones'>Tipos de integraciones</a></li>
+<li><details open><summary><a href='../../../integraciones/deltav/'>Deltav</a></summary><ul><li><a class='active' href='../../../integraciones/deltav/introduccion'>Introducción</a></li>
+<li><a href='../../../integraciones/deltav/diagrama-secuencia'>Arquitectura</a></li>
+<li><a href='../../../integraciones/deltav/api-rest'>API Doc</a></li>
+<li><a href='../../../integraciones/deltav/estimacion-mvp-contactos'>Estimación MVP Contactos</a></li></ul></details></li>
+<li><details open><summary><a href='../../../integraciones/produccion/'>Producción</a></summary><ul><li><a href='../../../integraciones/produccion/introduccion'>Introducción</a></li>
+<li><a href='../../../integraciones/produccion/arquitectura'>Arquitectura</a></li>
+<li><a href='../../../integraciones/produccion/api-doc'>API Doc</a></li>
+<li><a href='../../../integraciones/produccion/estimacion'>Estimación</a></li></ul></details></li>
+<li><a href='../../../integraciones/tipos-de-integraciones'>Tipos de integraciones</a></li></ul></details></li>
+<li><details open><summary>Infraestructura</summary><ul><li><details open><summary><a href='https://hito2026.github.io/documentation/infraestructura/instalacion-odoo-local/'>Instalación Odoo Local</a></summary><ul><li><a href='https://hito2026.github.io/documentation/infraestructura/instalacion-odoo-local/dimensionamiento-100-user/'>Dimensionamiento 100 User</a></li></ul></details></li>
+<li><details open><summary>Alta disponibilidad</summary><ul><li><a href='https://hito2026.github.io/documentation/infraestructura/alta-disponibilidad/caso-onecloud/'>Caso OneCloud</a></li></ul></details></li></ul></details></li></ul>
+  </aside>
+  <main class="content">
+    <h1 id="introducci-n-integraci-n-deltav-odoo-17"><a class="heading-anchor" href="#introducci-n-integraci-n-deltav-odoo-17">#</a>Introducción — Integración Deltav → Odoo 17</h1>
+<blockquote><div><strong>Objetivo, alcance y casos de uso</strong> de la integración entre Deltav y Odoo 17.</div></blockquote>
+<hr>
+<h2 id="objetivo"><a class="heading-anchor" href="#objetivo">#</a>Objetivo</h2>
+<p>Conectar el sistema externo <strong>Deltav</strong> con <strong>Odoo 17</strong> mediante tres componentes que trabajan en conjunto:</p>
+<ol>
+<li>Un <strong>middleware REST</strong> que traduce llamadas a JSON-RPC interno de Odoo.</li>
+<li>Un <strong>módulo Odoo <code>deltav_connector</code></strong> con modelos, vistas y controladores HTTP.</li>
+<li>Un <strong>módulo Odoo <code>integrador_odoo2delta</code></strong> que notifica automáticamente al sistema externo cuando se crean o confirman documentos de venta y compra.</li>
+</ol>
+<p>Esto permite sincronización bidireccional de entidades de negocio clave sin intervención manual.</p>
+<hr>
+<h2 id="componentes-del-proyecto"><a class="heading-anchor" href="#componentes-del-proyecto">#</a>Componentes del Proyecto</h2>
+<h3 id="middleware-rest-fastapi"><a class="heading-anchor" href="#middleware-rest-fastapi">#</a>Middleware REST (FastAPI)</h3>
+<p>API REST que expone endpoints para que el sistema externo envíe datos a Odoo. Autentica por API Key + JWT, resuelve <code>external_ref → odoo_id</code> vía Mapping DB, y garantiza idempotencia en todas las operaciones de escritura.</p>
+<h3 id="m-dulo-deltav-connector"><a class="heading-anchor" href="#m-dulo-deltav-connector">#</a>Módulo <code>deltav_connector</code></h3>
+<p>Módulo nativo de Odoo 17 que extiende el ERP con:</p>
+<ul>
+<li>Modelos custom para la configuración y auditoría de la integración</li>
+<li>Vistas (form, tree, search) y menú de configuración</li>
+<li>Controladores HTTP y lógica de sincronización DeltaV ↔ Odoo</li>
+<li>Reglas de seguridad (ACL) y permisos por rol</li>
+</ul>
+<h3 id="m-dulo-integrador-odoo2delta"><a class="heading-anchor" href="#m-dulo-integrador-odoo2delta">#</a>Módulo <code>integrador_odoo2delta</code></h3>
+<p>Módulo nativo de Odoo 17 que extiende los módulos de Ventas y Compras para notificar automáticamente al sistema externo:</p>
+<div class="table-wrap"><table><tr><th>Módulo Odoo extendido</th><th>Evento</th><th>Acción</th></tr><tr><td><code>sale.order</code></td><td><code>create</code> / <code>action_confirm</code></td><td>HTTP POST a API externa con payload de venta</td></tr><tr><td><code>purchase.order</code></td><td><code>create</code> / <code>button_confirm</code></td><td>HTTP POST a API externa con payload de compra</td></tr></table></div>
+<p>Incluye configuración de URL de API externa, reintentos, logging y manejo de errores HTTP.</p>
+<p><strong>Flujo:</strong> Odoo → evento (create/confirm) → hook → HTTP POST → API del sistema externo (DeltaV)</p>
+<hr>
+<h2 id="alcance"><a class="heading-anchor" href="#alcance">#</a>Alcance</h2>
+<div class="table-wrap"><table><tr><th>Incluido</th><th>Fuera de alcance</th></tr><tr><td>Autenticación por API Key + JWT</td><td>Single Sign-On (SSO)</td></tr><tr><td>Upsert de contactos (<code>res.partner</code>)</td><td>Gestión de oportunidades CRM</td></tr><tr><td>Upsert de productos con variantes (<code>product.template</code> + <code>product.product</code>)</td><td>Pricing avanzado o reglas de precio</td></tr><tr><td>Upsert de listas de materiales (<code>mrp.bom</code> + <code>mrp.bom.line</code>)</td><td>Planificación de producción (MRP scheduler)</td></tr><tr><td>Creación y conciliación de pagos (<code>account.payment</code>)</td><td>Facturación electrónica o fiscal</td></tr><tr><td>Mapeo external_id → odoo_id vía Mapping DB</td><td>Migración masiva de datos históricos</td></tr><tr><td>Idempotencia por <code>external_ref</code> en POST</td><td>Webhooks entrantes hacia Odoo</td></tr><tr><td>Rate limit de 100 req/min por API Key</td><td>Multi-tenancy</td></tr><tr><td>Notificaciones salientes de ventas y compras al sistema externo</td><td>Sincronización de otros modelos (inventario, contabilidad, etc.)</td></tr><tr><td>Reintentos automáticos con backoff exponencial en notificaciones salientes</td><td>Procesamiento de respuestas de negocio del sistema externo</td></tr><tr><td>Módulo <code>deltav_connector</code> — modelos, vistas, sync, seguridad</td><td>Modificaciones a otros módulos de Odoo</td></tr><tr><td>Módulo <code>integrador_odoo2delta</code> — hooks en sale.order y purchase.order</td><td>Notificaciones de otros documentos (facturas, albaranes, etc.)</td></tr></table></div>
+<hr>
+<h2 id="casos-de-uso"><a class="heading-anchor" href="#casos-de-uso">#</a>Casos de uso</h2>
+<h3 id="1-sincronizaci-n-de-contactos"><a class="heading-anchor" href="#1-sincronizaci-n-de-contactos">#</a>1. Sincronización de contactos</h3>
+<p>El sistema externo envía un contacto (empresa o individuo). El middleware lo crea o actualiza en Odoo por <code>external_ref</code> y devuelve el <code>odoo_id</code> mapeado.</p>
+<p><strong>Flujo:</strong> <code>POST /v1/contacts</code> → lookup mapping → upsert <code>res.partner</code> → respuesta con ID</p>
+<h3 id="2-alta-de-productos-con-variantes"><a class="heading-anchor" href="#2-alta-de-productos-con-variantes">#</a>2. Alta de productos con variantes</h3>
+<p>El sistema externo define un producto con atributos (color, talle, etc.). El middleware crea <code>product.template</code>, genera las variantes (<code>product.product</code>) y mapea cada una.</p>
+<p><strong>Flujo:</strong> <code>POST /v1/products</code> → crear template → generar variantes → mapear template + variantes</p>
+<h3 id="3-definici-n-de-lista-de-materiales-bom"><a class="heading-anchor" href="#3-definici-n-de-lista-de-materiales-bom">#</a>3. Definición de lista de materiales (BoM)</h3>
+<p>El sistema externo envía una BoM con sus componentes. El middleware resuelve las dependencias (productos deben existir) y crea <code>mrp.bom</code> + <code>mrp.bom.line</code>.</p>
+<p><strong>Flujo:</strong> <code>POST /v1/boms</code> → resolver producto y componentes → crear BoM → mapear</p>
+<h3 id="4-registro-de-pagos"><a class="heading-anchor" href="#4-registro-de-pagos">#</a>4. Registro de pagos</h3>
+<p>El sistema externo informa un pago asociado a facturas de Odoo. El middleware crea <code>account.payment</code>, concilia contra las facturas indicadas y confirma la operación.</p>
+<p><strong>Flujo:</strong> <code>POST /v1/payments</code> → resolver partner + facturas → crear pago → <code>action_post()</code> → respuesta</p>
+<h3 id="5-notificaci-n-de-ventas-al-sistema-externo"><a class="heading-anchor" href="#5-notificaci-n-de-ventas-al-sistema-externo">#</a>5. Notificación de ventas al sistema externo</h3>
+<p>Cuando se crea o confirma un <code>sale.order</code> en Odoo, el módulo <code>integrador_odoo2delta</code> envía automáticamente un HTTP POST a la API del sistema externo con los datos de la orden.</p>
+<p><strong>Flujo:</strong> <code>sale.order</code> confirmado → hook <code>integrador_odoo2delta</code> → HTTP POST → API DeltaV → confirmación</p>
+<h3 id="6-notificaci-n-de-compras-al-sistema-externo"><a class="heading-anchor" href="#6-notificaci-n-de-compras-al-sistema-externo">#</a>6. Notificación de compras al sistema externo</h3>
+<p>Cuando se crea o confirma un <code>purchase.order</code> en Odoo, el módulo <code>integrador_odoo2delta</code> envía automáticamente un HTTP POST a la API del sistema externo con los datos de la orden de compra.</p>
+<p><strong>Flujo:</strong> <code>purchase.order</code> confirmado → hook <code>integrador_odoo2delta</code> → HTTP POST → API DeltaV → confirmación</p>
+<hr>
+<blockquote><div>📄 <strong>Ver también:</strong> <a href='../../../integraciones/deltav/diagrama-secuencia'>Arquitectura</a> · <a href='../../../integraciones/deltav/api-rest'>API Doc</a></div></blockquote>
+  </main>
+</div>
+<script src="../../../assets/js/search.js" defer></script>
+<script src="../../../assets/js/navigation.js" defer></script>
+<script src="../../../assets/js/print.js" defer></script>
+</body>
+</html>
